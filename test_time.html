@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Test Time Override</title>
+</head>
+<body>
+<h2>Test Time Override</h2>
+<p>لتجربة النظام مع أوقات مختلفة، أضف هذا الكود في بداية دالة getLocalTime():</p>
+
+<pre>
+// للاختبار - تغيير الوقت مؤقتاً
+const testTime = "02:30"; // غير هذا الوقت للاختبار
+if (testTime) {
+  const [hours, minutes] = testTime.split(':').map(Number);
+  const testDate = new Date();
+  testDate.setHours(hours, minutes, 0, 0);
+  
+  // باقي الكود مع استخدام testDate بدلاً من now
+  const adjustedTime = testDate;
+  // ... باقي الكود
+}
+</pre>
+
+<h3>أمثلة للاختبار:</h3>
+<ul>
+<li><strong>02:30</strong> - لاختبار الشفت الثالث</li>
+<li><strong>07:30</strong> - لاختبار نهاية الشفت الثالث</li>
+<li><strong>08:30</strong> - لاختبار بداية اليوم التشغيلي الجديد</li>
+<li><strong>23:30</strong> - لاختبار الشفت الثاني</li>
+</ul>
+</body>
+</html>
