@@ -871,3 +871,2315 @@ input:checked + .slider:before {
 </style>
 </head>
 <body>
+<div id="splash-screen">
+  <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="logo" />
+  <h1>Food Trip Attendance</h1>
+  <p>Employee Management System</p>
+  <p class="credit">Designed by Ahmed Said</p>
+</div>
+
+<div class="app hidden" id="main-app">
+  <button id="theme-toggle" class="theme-toggle" title="Toggle Dark Mode">
+    <i id="theme-icon" class="fas fa-moon"></i>
+  </button>
+  
+  <div id="install-container" class="hidden">
+    <button id="install-btn" class="install-btn">📱 Install App</button>
+  </div>
+  
+  <div class="login" id="login-screen">
+    <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="login-logo" />
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" class="form-control" />
+    <input type="password" id="password" placeholder="Password" class="form-control" />
+    <div class="remember-me">
+      <input type="checkbox" id="remember-me">
+      <label for="remember-me">Remember me</label>
+    </div>
+    <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    <p id="login-error"></p>
+    <div class="device-info" id="device-info"></div>
+  </div>
+  
+  <div class="user-screen hidden" id="user-screen">
+    <div class="welcome-message" id="welcome-message">
+      Welcome back, <span id="user-name"></span>! Ready to start your day?
+    </div>
+    <div id="location-error" class="location-error hidden"></div>
+    <div class="user-profile">
+      <div class="user-image-container">
+        <img id="user-image" class="user-image hidden">
+        <i id="default-user-icon" class="fas fa-user default-user-icon"></i>
+      </div>
+      <div class="tech-name" id="displayed-user-name"></div>
+    </div>
+    <div class="user-actions">
+      <div class="user-status">
+        <span class="status-indicator status-checked-out" id="status-indicator"></span>
+        <span id="status-text">Currently checked out</span>
+      </div>
+      <div class="action-buttons">
+        <button id="check-in-btn" onclick="checkIn()" class="pulse"><i class="fas fa-sign-in-alt"></i> Check In</button>
+        <button id="check-out-btn" class="hidden" onclick="confirmCheckOut()"><i class="fas fa-sign-out-alt"></i> Check Out</button>
+      </div>
+    </div>
+    <div id="goodbye-message" class="goodbye-message hidden">
+      Thank you for your work today! Have a great rest.
+    </div>
+    <div class="stats-container">
+      <h3>Your Work Hours</h3>
+      <p class="work-stats">Today: <span id="today-hours">0 hours</span></p>
+      <p class="work-stats">This Month: <span id="month-hours">0 hours</span></p>
+      <p class="work-stats">Today Shifts: <span id="today-shifts">0 shifts</span></p>
+      <p class="work-stats">Month Shifts: <span id="month-shifts">0 shifts</span></p>
+      <p class="timezone-info">Timezone: <span id="timezone-display"></span></p>
+    </div>
+    <button onclick="logout()" style="background: var(--danger-color); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+  
+  <div class="admin-screen hidden" id="admin-screen">
+    <div class="admin-panel">
+      <h2>Admin Panel</h2>
+      
+      <!-- Manual Entry Section -->
+      <div class="admin-section">
+        <h3 class="section-title">Manual Entry</h3>
+        <div class="manual-entry">
+          <input type="text" id="manual-user-search" placeholder="Search Technician..." class="form-control" list="technicians-list">
+          <datalist id="technicians-list"></datalist>
+          <input type="date" id="manual-date" class="form-control">
+          <input type="time" id="manual-checkin" placeholder="Check In (HH:MM)" class="form-control">
+          <input type="time" id="manual-checkout" placeholder="Check Out (HH:MM)" class="form-control">
+          <div id="manual-shift-options" class="hidden">
+            <p>Available Shifts:</p>
+            <div id="manual-shift-options-container"></div>
+          </div>
+          <input type="hidden" id="manual-shifts" value="">
+          <button onclick="saveManualEntry()"><i class="fas fa-save"></i> Save Entry</button>
+        </div>
+      </div>
+      
+      <!-- Unified Buttons Section -->
+      <div class="admin-section">
+        <h3 class="section-title">Quick Actions</h3>
+        <div class="action-buttons">
+          <button class="unified-button backup-unified-btn" onclick="toggleUnifiedContent('backup')">
+            <i class="fas fa-database"></i> Backup Management
+          </button>
+          <button class="unified-button device-unified-btn" onclick="toggleUnifiedContent('device')">
+            <i class="fas fa-laptop"></i> Device Management
+          </button>
+        </div>
+        
+        <!-- Backup Unified Content -->
+        <div id="backup-unified-content" class="unified-content">
+          <h4><i class="fas fa-database"></i> Backup Management</h4>
+          <p>Create, restore, or download backups of all attendance data.</p>
+          
+          <div class="backup-controls">
+            <div class="backup-control-row">
+              <div class="backup-auto-toggle">
+                <label class="switch">
+                  <input type="checkbox" id="auto-backup-toggle" checked>
+                  <span class="slider"></span>
+                </label>
+                <span>Auto Daily Backup</span>
+              </div>
+              <select id="backup-time" class="backup-time-selector">
+                <option value="00:00">12:00 AM</option>
+                <option value="01:00">1:00 AM</option>
+                <option value="02:00">2:00 AM</option>
+                <option value="03:00">3:00 AM</option>
+                <option value="04:00">4:00 AM</option>
+                <option value="05:00">5:00 AM</option>
+                <option value="06:00">6:00 AM</option>
+                <option value="07:00">7:00 AM</option>
+                <option value="08:00">8:00 AM</option>
+                <option value="09:00">9:00 AM</option>
+                <option value="10:00">10:00 AM</option>
+                <option value="11:00">11:00 AM</option>
+                <option value="12:00">12:00 PM</option>
+                <option value="13:00">1:00 PM</option>
+                <option value="14:00">2:00 PM</option>
+                <option value="15:00">3:00 PM</option>
+                <option value="16:00">4:00 PM</option>
+                <option value="17:00">5:00 PM</option>
+                <option value="18:00">6:00 PM</option>
+                <option value="19:00">7:00 PM</option>
+                <option value="20:00">8:00 PM</option>
+                <option value="21:00">9:00 PM</option>
+                <option value="22:00">10:00 PM</option>
+                <option value="23:00">11:00 PM</option>
+              </select>
+            </div>
+            
+            <div class="backup-buttons">
+              <button onclick="createBackupNow()" class="backup-btn"><i class="fas fa-sync"></i> Create Backup Now</button>
+              <button onclick="downloadBackup()" class="backup-btn"><i class="fas fa-download"></i> Download Backup</button>
+              <button onclick="restoreBackup()" class="backup-btn"><i class="fas fa-undo"></i> Restore Backup</button>
+              <button onclick="viewBackupHistory()" class="backup-btn"><i class="fas fa-history"></i> View Backup History</button>
+            </div>
+          </div>
+          
+          <input type="file" id="backupFile" accept=".json" style="display: none;">
+          
+          <div id="backup-history" class="backup-history hidden">
+            <h4>Backup History</h4>
+            <div id="backup-list"></div>
+          </div>
+        </div>
+        
+        <!-- Device Management Unified Content -->
+        <div id="device-unified-content" class="unified-content">
+          <h4><i class="fas fa-laptop"></i> Device Management</h4>
+          <div class="search-container">
+            <input type="text" id="device-search" placeholder="Search technician" class="search-input">
+            <i class="fas fa-search search-icon"></i>
+          </div>
+          <div class="device-list" id="device-list">
+            <!-- Device list will be populated here -->
+          </div>
+        </div>
+      </div>
+      
+      <!-- Attendance Management Section -->
+      <div class="admin-section">
+        <h3 class="section-title">Attendance Management</h3>
+        <div>
+          <select id="month-select" class="month-selector">
+            <option value="">Select Month</option>
+            <option value="01">January</option>
+            <option value="02">February</option>
+            <option value="03">March</option>
+            <option value="04">April</option>
+            <option value="05">May</option>
+            <option value="06">June</option>
+            <option value="07">July</option>
+            <option value="08">August</option>
+            <option value="09">September</option>
+            <option value="10">October</option>
+            <option value="11">November</option>
+            <option value="12">December</option>
+          </select>
+          <div class="print-btn-container">
+            <button onclick="printSheet()"><i class="fas fa-print"></i> Print Sheet</button>
+          </div>
+        </div>
+        <div class="action-buttons">
+          <button onclick="addTechnician()"><i class="fas fa-user-plus"></i> Add Technician</button>
+          <button onclick="viewTechnicians()"><i class="fas fa-users"></i> View Technicians</button>
+          <button onclick="viewAttendance()"><i class="fas fa-clipboard-list"></i> View Attendance</button>
+        </div>
+      </div>
+      
+      <div class="admin-section">
+        <div id="technician-list" class="hidden"></div>
+        <div id="attendance-table" class="hidden">
+          <h3 class="section-title">Attendance Records</h3>
+          <table id="table-output">
+            <thead>
+              <tr>
+                <th>User</th>
+                <th>Date</th>
+                <th>Check In</th>
+                <th>Check Out</th>
+                <th>Worked Hours</th>
+                <th>Shifts Details</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+      
+      <button onclick="logout()" style="background: var(--danger-color); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCbLFYoCrWbvmkV49uN6-tdh4fn-EUIgTM",
+  authDomain: "food-trip-attendance.firebaseapp.com",
+  databaseURL: "https://food-trip-attendance-default-rtdb.firebaseio.com",
+  projectId: "food-trip-attendance",
+  storageBucket: "food-trip-attendance.appspot.com",
+  messagingSenderId: "358383921474",
+  appId: "1:358383921474:web:e7d44396941ad3e51f40db"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// متغيرات لتثبيت التطبيق
+let deferredPrompt;
+let selectedShifts = '';
+let currentTheme = localStorage.getItem('theme') || 'light';
+let deviceFingerprint = localStorage.getItem('deviceFingerprint') || '';
+let isAdmin = false;
+let autoBackupEnabled = true;
+let backupTime = "00:00";
+let backupInterval;
+
+// إحداثيات المصنع
+const factoryLat = 30.275512;
+const factoryLon = 31.810124;
+const allowedDistance = 100; // 100 متر
+
+// تعريف الشفتات حسب النظام الجديد (اليوم التشغيلي يبدأ من 8:00 صباحًا)
+const SHIFT_TIMES = {
+  weekday: {
+    shift1: { start: 8 * 60, end: 16 * 60 },    // 08:00 - 16:00
+    shift2: { start: 16 * 60, end: 24 * 60 },   // 16:00 - 24:00
+    shift3: { start: 0, end: 8 * 60 }           // 00:00 - 08:00 (اليوم التالي)
+  },
+  friday: {
+    shift1: { start: 8 * 60, end: 20 * 60 },    // 08:00 - 20:00
+    shift2: { start: 20 * 60, end: 8 * 60 }     // 20:00 - 08:00 (اليوم التالي)
+  }
+};
+
+// دالة لإظهار الإشعارات مع الصوت
+function showNotification(message, type = 'info') {
+  let background;
+  switch(type) {
+    case 'success':
+      background = 'linear-gradient(to right, #00b09b, #96c93d)';
+      break;
+    case 'error':
+      background = 'linear-gradient(to right, #ff416c, #ff4b2b)';
+      break;
+    case 'warning':
+      background = 'linear-gradient(to right, #f46b45, #eea849)';
+      break;
+    default:
+      background = 'linear-gradient(to right, #4b6cb7, #182848)';
+  }
+  
+  // تشغيل صوت الإشعار الافتراضي للجهاز
+  if (window.Notification && Notification.permission === "granted") {
+    const notification = new Notification("Attendance System", {
+      body: message,
+      silent: false // سيستخدم صوت الإشعارات الافتراضي للجهاز
+    });
+  }
+  
+  Toastify({
+    text: message,
+    duration: 3000,
+    newWindow: true,
+    close: true,
+    gravity: "top",
+    position: "right",
+    stopOnFocus: true,
+    style: {
+      background: background,
+      borderRadius: "4px",
+      boxShadow: "0 3px 6px rgba(0,0,0,0.16), 0 3px 6px rgba(0,0,0,0.23)"
+    }
+  }).showToast();
+}
+
+// دالة للحصول على الوقت الحقيقي من الجهاز مع التحقق من التوقيت الصيفي والتعديل للنظام التشغيلي الجديد
+async function getLocalTime() {
+  try {
+    const now = new Date();
+    const timezone = 'Africa/Cairo';
+    const isSummerTime = isEgyptSummerTime(now);
+    
+    // تعديل الوقت حسب التوقيت الصيفي/الشتوي
+    const adjustedTime = new Date(now);
+    if (isSummerTime) {
+      adjustedTime.setHours(adjustedTime.getHours() + 1); // إضافة ساعة في التوقيت الصيفي
+    }
+    
+    // تنسيق التاريخ والوقت حسب المنطقة الزمنية
+    const options = { timeZone: timezone, hour12: false };
+    const time = adjustedTime.toLocaleTimeString('en-GB', options).slice(0,5);
+    const day = adjustedTime.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+    
+    // تحديد اليوم التشغيلي الجديد (اليوم يبدأ من 8:00 صباحًا)
+    let operationalDate;
+    const hours = adjustedTime.getHours();
+    
+    // إذا كان الوقت قبل 8:00 صباحًا، نعتبره جزء من اليوم التشغيلي السابق
+    if (hours < 8) {
+      const prevDay = new Date(adjustedTime);
+      prevDay.setDate(prevDay.getDate() - 1);
+      operationalDate = prevDay.toLocaleDateString('en-CA', options);
+    } else {
+      // إذا كان الوقت 8:00 صباحًا أو بعدها، فهو اليوم التشغيلي الحالي
+      operationalDate = adjustedTime.toLocaleDateString('en-CA', options);
+    }
+    
+    return {
+      date: operationalDate,
+      time,
+      day,
+      valid: true,
+      isSummerTime,
+      actualDateTime: adjustedTime // إضافة التاريخ والوقت الفعلي للاستخدام في العمليات الأخرى
+    };
+  } catch (error) {
+    console.error("Error getting local time:", error);
+    return {
+      date: new Date().toISOString().split('T')[0],
+      time: new Date().toLocaleTimeString('en-GB', {hour12: false}).slice(0,5),
+      day: new Date().getDay(),
+      valid: false,
+      isSummerTime: false,
+      actualDateTime: new Date()
+    };
+  }
+}
+
+// دالة لتحديد ما إذا كان الوقت الحالي في التوقيت الصيفي لمصر
+function isEgyptSummerTime(date) {
+  const year = date.getFullYear();
+  
+  // آخر جمعة في أبريل (بداية التوقيت الصيفي)
+  const april = new Date(year, 3, 30); // أبريل هو الشهر 3 (0-based)
+  const lastFridayApril = new Date(april);
+  lastFridayApril.setDate(30 - (april.getDay() + 1) % 7);
+  
+  // آخر خميس في أكتوبر (نهاية التوقيت الصيفي)
+  const october = new Date(year, 9, 30); // أكتوبر هو الشهر 9 (0-based)
+  const lastThursdayOctober = new Date(october);
+  lastThursdayOctober.setDate(30 - (october.getDay() + 2) % 7);
+  
+  // إذا كان التاريخ الحالي بين آخر جمعة في أبريل وآخر خميس في أكتوبر
+  return date >= lastFridayApril && date <= lastThursdayOctober;
+}
+
+// دالة محدثة لتحديد الشيفتات بناءً على وقت الدخول والخروج مع مراعاة اليوم التشغيلي الجديد
+function determineShifts(checkInTime, checkOutTime, operationalDay) {
+  const isFriday = operationalDay === 5; // 5 = Friday
+  const shifts = isFriday ? SHIFT_TIMES.friday : SHIFT_TIMES.weekday;
+  
+  const checkInMinutes = timeToMinutes(checkInTime);
+  let checkOutMinutes = timeToMinutes(checkOutTime);
+  
+  // إذا كان وقت الخروج أقل من وقت الدخول، فهذا يعني أن الخروج في اليوم التالي
+  if (checkOutMinutes < checkInMinutes) {
+    checkOutMinutes += 24 * 60; // إضافة 24 ساعة (1440 دقيقة)
+  }
+  
+  let workedShifts = [];
+  
+  // تحديد الشيفتات التي تم العمل فيها مع مراعاة الشيفتات العابرة لمنتصف الليل
+  for (const [shiftName, shiftTimes] of Object.entries(shifts)) {
+    let shiftStart = shiftTimes.start;
+    let shiftEnd = shiftTimes.end;
+    
+    // للشيفتات التي تعبر منتصف الليل (مثل الشيفت الثالث والثاني في الجمعة)
+    if (shiftEnd < shiftStart) {
+      shiftEnd += 24 * 60; // إضافة 24 ساعة
+    }
+    
+    // التحقق من تداخل أوقات العمل مع الشيفت
+    if (checkInMinutes < shiftEnd && checkOutMinutes > shiftStart) {
+      workedShifts.push(shiftName.replace('shift', ''));
+    }
+  }
+  
+  return workedShifts;
+}
+
+// دالة محدثة لحساب عدد الشيفتات بناءً على وقت الدخول والخروج وساعات العمل
+function calculateShifts(checkInTime, checkOutTime, operationalDay) {
+  const workedShifts = determineShifts(checkInTime, checkOutTime, operationalDay);
+  
+  if (workedShifts.length === 0) {
+    return [];
+  }
+  
+  // حساب ساعات العمل الفعلية مع مراعاة الشيفتات العابرة لمنتصف الليل
+  const workedHours = parseFloat(calculateWorkedHoursAdvanced(checkInTime, checkOutTime));
+  
+  // إنشاء خيارات الشيفتات الممكنة بناءً على ساعات العمل
+  const shiftOptions = [];
+  
+  if (operationalDay === 5) { // Friday
+    if (workedHours >= 5.5 && workedHours <= 6.5) {
+      // يمكن تسجيل شيفت واحد فقط
+      shiftOptions.push(workedShifts[0]);
+    } else if (workedHours >= 11.5 && workedHours <= 12.5) {
+      // يمكن تسجيل شيفتين أو شيفت واحد
+      if (workedShifts.length >= 2) {
+        shiftOptions.push(workedShifts[0]);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}`);
+      } else {
+        shiftOptions.push(workedShifts[0]);
+      }
+    } else if (workedHours > 12.5) {
+      // يمكن تسجيل شيفتين كحد أقصى
+      if (workedShifts.length === 2) {
+        shiftOptions.push(workedShifts[0]);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}`);
+      } else {
+        shiftOptions.push(workedShifts[0]);
+      }
+    }
+  } else {
+    // أيام الأسبوع العادية
+    if (workedHours >= 6 && workedHours < 12) { // حوالي 8 ساعات
+      // يمكن تسجيل شيفت واحد فقط
+      shiftOptions.push(workedShifts[0]);
+    } else if (workedHours >= 12 && workedHours < 18) { // حوالي 16 ساعة
+      // يمكن تسجيل شيفتين أو شيفت واحد
+      if (workedShifts.length >= 2) {
+        shiftOptions.push(workedShifts[0]);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}`);
+      } else {
+        shiftOptions.push(workedShifts[0]);
+      }
+    } else if (workedHours >= 18) { // حوالي 24 ساعة
+      // يمكن تسجيل 3 شيفتات أو أقل
+      if (workedShifts.length === 3) {
+        shiftOptions.push(workedShifts[0]);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}`);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}-${workedShifts[2]}`);
+      } else if (workedShifts.length === 2) {
+        shiftOptions.push(workedShifts[0]);
+        shiftOptions.push(`${workedShifts[0]}-${workedShifts[1]}`);
+      } else {
+        shiftOptions.push(workedShifts[0]);
+      }
+    }
+  }
+  
+  return shiftOptions;
+}
+
+// دالة محدثة لحساب ساعات العمل مع مراعاة الشيفتات العابرة لمنتصف الليل
+function calculateWorkedHoursAdvanced(start, end) {
+  // تحويل الوقت إلى دقائق
+  const startMinutes = parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1]);
+  let endMinutes = parseInt(end.split(':')[0]) * 60 + parseInt(end.split(':')[1]);
+
+  // حساب الفرق بالدقائق مع مراعاة عبور منتصف الليل
+  let diffMinutes;
+  if (endMinutes < startMinutes) {
+    // إذا كان وقت الخروج أقل من وقت الدخول، فهذا يعني عبور منتصف الليل
+    diffMinutes = (24 * 60) - startMinutes + endMinutes;
+  } else {
+    diffMinutes = endMinutes - startMinutes;
+  }
+
+  // تحويل الدقائق إلى ساعات وكسور الساعة
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+
+  // إرجاع النتيجة بصيغة الساعات.الدقائق
+  return (hours + minutes / 60).toFixed(2);
+}
+
+// دالة محدثة لحفظ التسجيل اليدوي مع مراعاة اليوم التشغيلي الجديد
+function saveManualEntry() {
+  const user = document.getElementById("manual-user-search").value.trim();
+  const inputDate = document.getElementById("manual-date").value;
+  const checkIn = document.getElementById("manual-checkin").value;
+  const checkOut = document.getElementById("manual-checkout").value;
+
+  if (!user || !inputDate || !checkIn || !checkOut) {
+    showNotification("Please fill all fields", 'error');
+    return;
+  }
+
+  // التحقق من أن الفني موجود في قاعدة البيانات
+  const techRef = database.ref(`technicians/${user}`);
+  techRef.once("value", snapshot => {
+    if (!snapshot.exists()) {
+      showNotification("Technician not found in database", 'error');
+      return;
+    }
+
+    // تحديد اليوم التشغيلي بناءً على وقت الدخول
+    const checkInHour = parseInt(checkIn.split(':')[0]);
+    let operationalDate = inputDate;
+    
+    // إذا كان وقت الدخول قبل 8:00 صباحاً، فهو ينتمي لليوم التشغيلي السابق
+    if (checkInHour < 8) {
+      const prevDay = new Date(inputDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      operationalDate = prevDay.toISOString().split('T')[0];
+    }
+    
+    const operationalDay = new Date(operationalDate).getDay();
+    const availableShifts = calculateShifts(checkIn, checkOut, operationalDay);
+    
+    if (availableShifts.length === 0) {
+      showNotification("This work duration doesn't match any valid shift pattern", 'error');
+      return;
+    }
+
+    // عرض خيارات الشيفتات للأدمن
+    showShiftOptions(availableShifts, true).then(selectedShift => {
+      if (!selectedShift) return; // User cancelled
+      
+      const workedHours = calculateWorkedHoursAdvanced(checkIn, checkOut);
+      const ref = database.ref(`attendance/${user}/${operationalDate}`);
+      ref.update({
+        checkIn,
+        checkOut,
+        workedHours,
+        shifts: selectedShift,
+        manualEntry: true
+      }).then(() => {
+        showNotification("Entry saved successfully!", 'success');
+        document.getElementById("manual-user-search").value = "";
+        document.getElementById("manual-date").value = "";
+        document.getElementById("manual-checkin").value = "";
+        document.getElementById("manual-checkout").value = "";
+        document.getElementById("manual-shifts").value = "";
+      }).catch(error => {
+        showNotification("Error saving entry: " + error.message, 'error');
+      });
+    });
+  });
+}
+
+// ==================== النسخ الاحتياطي الجديد ====================
+
+// دالة لإنشاء نسخة احتياطية وحفظها في السجل
+async function createBackup() {
+  try {
+    showNotification("Creating backup...", "info");
+    
+    // جلب جميع البيانات
+    const attendanceData = await getAllAttendanceData();
+    const techniciansData = await getAllTechniciansData();
+    const devicesData = await getAllDevicesData();
+    
+    // إنشاء كائن يحتوي على جميع البيانات
+    const backupData = {
+      attendance: attendanceData,
+      technicians: techniciansData,
+      devices: devicesData,
+      timestamp: new Date().toISOString()
+    };
+    
+    // حفظ النسخة الاحتياطية في السجل
+    const backupRef = database.ref('backups').push();
+    await backupRef.set({
+      data: backupData,
+      timestamp: new Date().getTime(),
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      size: JSON.stringify(backupData).length
+    });
+    
+    showNotification("Backup created successfully!", "success");
+    return backupData;
+  } catch (error) {
+    console.error("Error creating backup:", error);
+    showNotification("Failed to create backup: " + error.message, "error");
+    throw error;
+  }
+}
+
+// دالة لإنشاء نسخة احتياطية الآن
+async function createBackupNow() {
+  try {
+    await createBackup();
+    viewBackupHistory();
+  } catch (error) {
+    console.error("Error creating backup:", error);
+  }
+}
+
+// دالة لتنزيل نسخة احتياطية
+async function downloadBackup() {
+  try {
+    const backupData = await createBackup();
+    
+    // تحويل إلى JSON
+    const jsonData = JSON.stringify(backupData, null, 2);
+    
+    // إنشاء ملف للتنزيل
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AttendanceBackup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Backup downloaded successfully', 'success');
+  } catch (error) {
+    showNotification('Failed to create backup: ' + error.message, 'error');
+  }
+}
+
+// دالة لاستعادة النسخ الاحتياطي
+function restoreBackup() {
+  document.getElementById('backupFile').click();
+}
+
+// استمع لاختيار الملف
+document.getElementById('backupFile').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  try {
+    const fileContent = await readFileAsText(file);
+    const backupData = JSON.parse(fileContent);
+    
+    // تأكيد الاستعادة
+    showConfirmationDialog(
+      'Confirm Backup Restore',
+      'Are you sure you want to restore this backup? All current data will be replaced.',
+      async () => {
+        // استعادة البيانات
+        await database.ref('attendance').set(backupData.attendance);
+        await database.ref('technicians').set(backupData.technicians);
+        await database.ref('deviceFingerprints').set(backupData.devices);
+        
+        showNotification('Backup restored successfully', 'success');
+      }
+    );
+  } catch (error) {
+    showNotification('Failed to restore backup: ' + error.message, 'error');
+  }
+});
+
+// دالة لعرض سجل النسخ الاحتياطية
+function viewBackupHistory() {
+  const backupHistory = document.getElementById('backup-history');
+  backupHistory.classList.toggle('hidden');
+  
+  if (backupHistory.classList.contains('hidden')) return;
+  
+  const backupList = document.getElementById('backup-list');
+  backupList.innerHTML = '<p>Loading backup history...</p>';
+  
+  const ref = database.ref('backups').orderByChild('timestamp');
+  ref.once("value", snapshot => {
+    if (!snapshot.exists() || snapshot.numChildren() === 0) {
+      backupList.innerHTML = '<p>No backups found</p>';
+      return;
+    }
+    
+    let html = '';
+    snapshot.forEach(backupSnapshot => {
+      const backup = backupSnapshot.val();
+      const date = new Date(backup.timestamp).toLocaleString();
+      const sizeKB = (backup.size / 1024).toFixed(2);
+      
+      html += `
+<div class="backup-item">
+  <div class="backup-info">
+    <div><strong>${backup.date} ${backup.time}</strong></div>
+    <div>Size: ${sizeKB} KB</div>
+  </div>
+  <div class="backup-actions">
+    <button class="backup-btn" onclick="restoreFromHistory('${backupSnapshot.key}')">Restore</button>
+    <button class="delete-btn" onclick="deleteBackup('${backupSnapshot.key}')">Delete</button>
+    <button class="backup-btn" onclick="downloadSpecificBackup('${backupSnapshot.key}')">Download</button>
+  </div>
+</div>
+`;
+    });
+    
+    backupList.innerHTML = html;
+  });
+}
+
+// دالة لتنزيل نسخة احتياطية محددة من السجل
+async function downloadSpecificBackup(backupId) {
+  try {
+    const snapshot = await database.ref(`backups/${backupId}`).once("value");
+    const backupData = snapshot.val().data;
+    
+    // تحويل إلى JSON
+    const jsonData = JSON.stringify(backupData, null, 2);
+    
+    // إنشاء ملف للتنزيل
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AttendanceBackup_${backupId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Backup downloaded successfully', 'success');
+  } catch (error) {
+    showNotification('Failed to download backup: ' + error.message, 'error');
+  }
+}
+
+// دالة لاستعادة من سجل النسخ الاحتياطية
+function restoreFromHistory(backupId) {
+  showConfirmationDialog(
+    "Confirm Restore",
+    "Are you sure you want to restore this backup? All current data will be replaced.",
+    async () => {
+      try {
+        const snapshot = await database.ref(`backups/${backupId}`).once("value");
+        const backupData = snapshot.val().data;
+        
+        await database.ref('attendance').set(backupData.attendance);
+        await database.ref('technicians').set(backupData.technicians);
+        await database.ref('deviceFingerprints').set(backupData.devices);
+        
+        showNotification('Backup restored successfully', 'success');
+      } catch (error) {
+        showNotification('Failed to restore backup: ' + error.message, 'error');
+      }
+    }
+  );
+}
+
+// دالة لحذف نسخة احتياطية من السجل
+function deleteBackup(backupId) {
+  showConfirmationDialog(
+    "Confirm Delete",
+    "Are you sure you want to delete this backup? This action cannot be undone.",
+    async () => {
+      try {
+        await database.ref(`backups/${backupId}`).remove();
+        showNotification('Backup deleted successfully', 'success');
+        viewBackupHistory();
+      } catch (error) {
+        showNotification('Failed to delete backup: ' + error.message, 'error');
+      }
+    }
+  );
+}
+
+// دالة لجدولة النسخ اليومية التلقائية
+function scheduleDailyBackups() {
+  // إيقاف أي جدولة موجودة مسبقاً
+  if (backupInterval) {
+    clearInterval(backupInterval);
+  }
+  
+  // إذا كانت النسخ التلقائي معطلة، لا تفعل شيئاً
+  if (!autoBackupEnabled) return;
+  
+  // حساب الوقت المتبقي حتى وقت النسخ المحدد
+  const now = new Date();
+  const [hours, minutes] = backupTime.split(':').map(Number);
+  const backupTimeToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hours,
+    minutes,
+    0
+  );
+  
+  let timeUntilBackup = backupTimeToday - now;
+  
+  // إذا كان وقت النسخ اليوم قد مضى، نضيف 24 ساعة للانتقال إلى الغد
+  if (timeUntilBackup < 0) {
+    timeUntilBackup += 24 * 60 * 60 * 1000;
+  }
+  
+  // جدولة النسخة الأولى
+  setTimeout(() => {
+    createBackup().catch(error => {
+      console.error("Scheduled backup failed:", error);
+    });
+    
+    // ثم تكرار كل 24 ساعة
+    backupInterval = setInterval(() => {
+      createBackup().catch(error => {
+        console.error("Daily backup failed:", error);
+      });
+    }, 24 * 60 * 60 * 1000);
+  }, timeUntilBackup);
+  
+  showNotification(`Auto backup scheduled for ${backupTime} daily`, "info");
+}
+
+// دالة مساعدة لقراءة الملف كنص
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => resolve(event.target.result);
+    reader.onerror = error => reject(error);
+    reader.readAsText(file);
+  });
+}
+
+// دالة مساعدة لجلب جميع بيانات الحضور
+async function getAllAttendanceData() {
+  const snapshot = await database.ref('attendance').once('value');
+  return snapshot.val();
+}
+
+// دالة مساعدة لجلب جميع بيانات الفنيين
+async function getAllTechniciansData() {
+  const snapshot = await database.ref('technicians').once('value');
+  return snapshot.val();
+}
+
+// دالة مساعدة لجلب جميع بيانات الأجهزة
+async function getAllDevicesData() {
+  const snapshot = await database.ref('deviceFingerprints').once('value');
+  return snapshot.val();
+}
+
+// ==================== نهاية قسم النسخ الاحتياطي ====================
+
+// دالة للتبديل بين الوضع الداكن والفاتح
+function toggleTheme() {
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('theme', currentTheme);
+  
+  // تحديث الأيقونة
+  const themeIcon = document.getElementById('theme-icon');
+  themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  
+  showNotification(`Switched to ${currentTheme} mode`);
+}
+
+// دالة لإنشاء بصمة الجهاز
+function generateDeviceFingerprint() {
+  // إذا كان هناك بصمة محفوظة بالفعل، استخدمها
+  if (deviceFingerprint) {
+    return deviceFingerprint;
+  }
+  
+  const userAgent = navigator.userAgent;
+  const language = navigator.language;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const screenResolution = `${window.screen.width}x${window.screen.height}`;
+  const platform = navigator.platform;
+  const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
+  
+  // إنشاء بصمة فريدة بناءً على خصائص الجهاز
+  const fingerprint = `${userAgent}-${language}-${timezone}-${screenResolution}-${platform}-${hardwareConcurrency}`;
+  
+  // تخزين البصمة في localStorage لاستخدامها بعد إعادة التحميل
+  deviceFingerprint = btoa(fingerprint);
+  localStorage.setItem('deviceFingerprint', deviceFingerprint);
+  
+  return deviceFingerprint;
+}
+
+// دالة للتحقق من بصمة الجهاز
+function checkDeviceFingerprint(username) {
+  return new Promise((resolve, reject) => {
+    if (isAdmin) {
+      resolve(true); // لا يوجد تحقق للأدمن
+      return;
+    }
+    
+    const ref = database.ref(`deviceFingerprints/${username}`);
+    ref.once("value", snapshot => {
+      if (!snapshot.exists()) {
+        // أول مرة تسجيل دخول، حفظ بصمة الجهاز
+        ref.set(deviceFingerprint)
+          .then(() => resolve(true))
+          .catch(error => reject(error));
+      } else {
+        // التحقق من تطابق البصمة
+        if (snapshot.val() === deviceFingerprint) {
+          resolve(true);
+        } else {
+          // التحقق من وجود إذن مؤقت
+          const tempAccessRef = database.ref(`temporaryAccess/${username}`);
+          tempAccessRef.once("value", tempSnapshot => {
+            if (tempSnapshot.exists() && tempSnapshot.val().allowed) {
+              // مسح الإذن المؤقت بعد استخدامه
+              tempAccessRef.remove();
+              resolve(true);
+            } else {
+              reject("Device mismatch. Please use your registered device or contact admin.");
+            }
+          });
+        }
+      }
+    });
+  });
+}
+
+// دالة لإظهار نافذة تأكيد
+function showConfirmationDialog(title, message, onConfirm, onCancel = null) {
+  const dialog = document.createElement('div');
+  dialog.className = 'confirmation-dialog';
+  dialog.innerHTML = `
+    <div class="dialog-content">
+      <div class="dialog-title">${title}</div>
+      <div class="dialog-message">${message}</div>
+      <div class="dialog-buttons">
+        <button class="dialog-button dialog-button-primary" id="confirm-btn">Confirm</button>
+        ${onCancel ? '<button class="dialog-button dialog-button-secondary" id="cancel-btn">Cancel</button>' : ''}
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  
+  document.getElementById('confirm-btn').addEventListener('click', () => {
+    document.body.removeChild(dialog);
+    onConfirm();
+  });
+  
+  if (onCancel) {
+    document.getElementById('cancel-btn').addEventListener('click', () => {
+      document.body.removeChild(dialog);
+      onCancel();
+    });
+  }
+}
+
+// دالة لحساب المسافة بين إحداثيين باستخدام Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // نصف قطر الأرض بالأمتار
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // المسافة بالأمتار
+}
+
+// دالة للتحقق من الموقع الجغرافي
+function checkLocation() {
+  return new Promise((resolve, reject) => {
+    if (isAdmin) {
+      resolve(true); // الأدمن معفي من شرط الموقع
+      return;
+    }
+    
+    if (!navigator.geolocation) {
+      reject("Geolocation is not supported by your browser");
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+        const distance = calculateDistance(userLat, userLon, factoryLat, factoryLon);
+        
+        if (distance <= allowedDistance) {
+          resolve(true);
+        } else {
+          reject(`You must be within ${allowedDistance}m of the factory to register attendance. Current distance: ${Math.round(distance)}m`);
+        }
+      },
+      (error) => {
+        reject("Unable to retrieve your location: " + error.message);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  });
+}
+
+// دالة لتحويل الوقت إلى دقائق منذ منتصف الليل
+function timeToMinutes(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+// دالة لعرض خيارات الشيفتات
+function showShiftOptions(availableShifts, isManual = false) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement('div');
+    dialog.className = 'confirmation-dialog';
+    
+    let shiftsHtml = '';
+    if (availableShifts.length === 0) {
+      shiftsHtml = '<p>No valid shifts detected for your work duration. Please contact admin.</p>';
+    } else {
+      shiftsHtml = `
+        <div class="shift-summary">
+          <div class="shift-summary-title">Available Shifts:</div>
+          ${availableShifts.map(shift => {
+            // Format shift options for display
+            const shiftText = shift.split('-').map(s => `Shift ${s}`).join(' + ');
+            return `<div class="shift-option" onclick="selectShiftOption(this, '${shift}')">${shiftText}</div>`;
+          }).join('')}
+        </div>
+      `;
+    }
+    
+    dialog.innerHTML = `
+      <div class="dialog-content">
+        <div class="dialog-title">Select Shifts</div>
+        <div class="dialog-message">
+          ${shiftsHtml}
+          <input type="hidden" id="selected-shift" value="">
+        </div>
+        <div class="dialog-buttons">
+          <button class="dialog-button dialog-button-primary" id="confirm-shift-btn" ${availableShifts.length === 0 ? 'disabled' : ''}>Confirm</button>
+          ${isManual ? '<button class="dialog-button dialog-button-secondary" id="cancel-shift-btn">Cancel</button>' : ''}
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    window.selectShiftOption = function(element, shift) {
+      document.querySelectorAll('.shift-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      element.classList.add('selected');
+      document.getElementById('selected-shift').value = shift;
+      document.getElementById('confirm-shift-btn').disabled = false;
+    };
+    
+    document.getElementById('confirm-shift-btn').addEventListener('click', () => {
+      const selectedShift = document.getElementById('selected-shift').value;
+      document.body.removeChild(dialog);
+      resolve(selectedShift);
+    });
+    
+    if (isManual) {
+      document.getElementById('cancel-shift-btn').addEventListener('click', () => {
+        document.body.removeChild(dialog);
+        resolve(null);
+      });
+    }
+  });
+}
+
+// دالة محدثة لتسجيل الدخول مع التحقق من الموقع الجغرافي واليوم التشغيلي الجديد
+async function checkIn() {
+  const username = document.getElementById("user-name").innerText;
+  
+  try {
+    // التحقق من الموقع الجغرافي أولاً
+    await checkLocation();
+    
+    // إذا نجح التحقق من الموقع، المتابعة لتسجيل الدخول
+    const localTime = await getLocalTime();
+    
+    if (!localTime.valid) {
+      showNotification("Cannot check in with incorrect device time", "error");
+      return;
+    }
+    
+    const date = localTime.date; // اليوم التشغيلي المحدث
+    const time = localTime.time;
+    
+    // التحقق مما إذا كان هناك تسجيل يدوي لهذا اليوم التشغيلي
+    const ref = database.ref(`attendance/${username}/${date}`);
+    const snapshot = await ref.once("value");
+    
+    if (snapshot.exists() && snapshot.val().manualEntry) {
+      showNotification("Attendance already registered manually for today", "info");
+      return;
+    }
+    
+    ref.update({ checkIn: time })
+      .then(() => {
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Currently checked in";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+        document.getElementById("location-error").classList.add("hidden");
+        showNotification('Checked in successfully', 'success');
+        updateWorkStats(username);
+      })
+      .catch(error => {
+        showNotification('Failed to check in: ' + error.message, 'error');
+      });
+  } catch (error) {
+    document.getElementById("location-error").textContent = error;
+    document.getElementById("location-error").classList.remove("hidden");
+    showNotification(error, 'error');
+  }
+}
+
+// دالة محدثة لتأكيد تسجيل الخروج مع التحقق من الموقع الجغرافي واليوم التشغيلي الجديد
+async function confirmCheckOut() {
+  const username = document.getElementById("user-name").innerText;
+  
+  try {
+    // التحقق من الموقع الجغرافي أولاً
+    await checkLocation();
+    
+    // إذا نجح التحقق من الموقع، المتابعة لتسجيل الخروج
+    const localTime = await getLocalTime();
+    
+    if (!localTime.valid) {
+      showNotification("Cannot check out with incorrect device time", 'error');
+      return;
+    }
+    
+    const date = localTime.date; // اليوم التشغيلي المحدث
+    
+    const ref = database.ref(`attendance/${username}/${date}`);
+    const snapshot = await ref.once("value");
+    
+    if (snapshot.exists() && snapshot.val().manualEntry) {
+      showNotification("Attendance already registered manually for today", 'info');
+      return;
+    }
+    
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if (data.checkIn && !data.checkOut) {
+        const checkInTime = data.checkIn;
+        const checkOutTime = localTime.time;
+        
+        // حساب الشيفتات المتاحة بناءً على وقت الدخول والخروج مع اليوم التشغيلي الجديد
+        const operationalDay = new Date(date).getDay();
+        const availableShifts = calculateShifts(checkInTime, checkOutTime, operationalDay);
+        
+        if (availableShifts.length === 0) {
+          showConfirmationDialog(
+            "Invalid Work Duration",
+            `Your work duration (${checkInTime} - ${checkOutTime}) doesn't match any valid shift pattern. Your attendance will be recorded but not counted in any shift.`,
+            () => checkOut("0", checkInTime, checkOutTime)
+          );
+        } else {
+          showShiftOptions(availableShifts).then(selectedShift => {
+            if (selectedShift) {
+              checkOut(selectedShift, checkInTime, checkOutTime);
+            }
+          });
+        }
+      }
+    }
+  } catch (error) {
+    document.getElementById("location-error").textContent = error;
+    document.getElementById("location-error").classList.remove("hidden");
+    showNotification(error, 'error');
+  }
+}
+
+// دالة محدثة لتسجيل الخروج مع اليوم التشغيلي الجديد
+async function checkOut(shifts, checkInTime, checkOutTime) {
+  const username = document.getElementById("user-name").innerText;
+  const localTime = await getLocalTime();
+  const date = localTime.date; // اليوم التشغيلي المحدث
+  const time = localTime.time;
+  
+  const workedHours = calculateWorkedHoursAdvanced(checkInTime || localTime.time, checkOutTime || time);
+  const ref = database.ref(`attendance/${username}/${date}`);
+  
+  ref.update({ 
+    checkOut: time, 
+    workedHours,
+    shifts: shifts || '1' // Default to shift 1 if not provided
+  })
+  .then(() => {
+    document.getElementById("check-out-btn").classList.add("hidden");
+    document.getElementById("goodbye-message").classList.remove("hidden");
+    document.getElementById("status-text").innerText = "Work completed for today";
+    document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+    document.getElementById("location-error").classList.add("hidden");
+    showNotification('Checked out successfully', 'success');
+    
+    // تحديث الإحصائيات
+    updateWorkStats(username);
+  })
+  .catch(error => {
+    showNotification('Failed to check out: ' + error.message, 'error');
+  });
+}
+
+// دالة محدثة لحساب ساعات العمل (استخدام الدالة المتقدمة)
+function calculateWorkedHours(start, end) {
+  return calculateWorkedHoursAdvanced(start, end);
+}
+
+// دالة محدثة لتحديث إحصائيات العمل مع اليوم التشغيلي الجديد
+async function updateWorkStats(username) {
+  const localTime = await getLocalTime();
+  const today = localTime.date; // اليوم التشغيلي المحدث
+  const currentMonth = new Date().getMonth() + 1;
+
+  // ساعات العمل اليوم
+  const todayRef = database.ref(`attendance/${username}/${today}`);
+  todayRef.once("value", snapshot => {
+    if (snapshot.exists() && snapshot.val().workedHours) {
+      document.getElementById("today-hours").innerText = snapshot.val().workedHours + " hours";
+      if (snapshot.val().shifts) {
+        const shifts = snapshot.val().shifts;
+        let shiftCount = 0;
+        if (shifts.includes('-')) {
+          shiftCount = shifts.split('-').length;
+        } else if (shifts !== '0') {
+          shiftCount = 1;
+        }
+        document.getElementById("today-shifts").innerText = shiftCount;
+      }
+    } else {
+      document.getElementById("today-hours").innerText = "0 hours";
+      document.getElementById("today-shifts").innerText = "0";
+    }
+  });
+
+  // ساعات العمل الشهرية
+  const monthRef = database.ref(`attendance/${username}`);
+  monthRef.once("value", snapshot => {
+    let totalHours = 0;
+    let totalShifts = 0;
+    snapshot.forEach(monthSnapshot => {
+      const dateParts = monthSnapshot.key.split('-');
+      const month = parseInt(dateParts[1]);
+      if (month === currentMonth && monthSnapshot.val().workedHours) {
+        totalHours += parseFloat(monthSnapshot.val().workedHours);
+        if (monthSnapshot.val().shifts) {
+          const shifts = monthSnapshot.val().shifts;
+          if (shifts.includes('-')) {
+            totalShifts += shifts.split('-').length;
+          } else if (shifts !== '0') {
+            totalShifts += 1;
+          }
+        }
+      }
+    });
+    document.getElementById("month-hours").innerText = totalHours.toFixed(2) + " hours";
+    document.getElementById("month-shifts").innerText = totalShifts;
+  });
+}
+
+// دالة محدثة للتحقق من حالة اليوم مع اليوم التشغيلي الجديد
+async function checkTodayStatus(username) {
+  const localTime = await getLocalTime();
+  const today = localTime.date; // اليوم التشغيلي المحدث
+  
+  const ref = database.ref(`attendance/${username}/${today}`);
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if (data.manualEntry) {
+        // إذا كان هناك تسجيل يدوي، إخفاء أزرار الدخول/الخروج
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("status-text").innerText = "Attendance registered manually";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+      } else if (data.checkIn && !data.checkOut) {
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Currently checked in";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+      } else if (data.checkIn && data.checkOut) {
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("goodbye-message").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Work completed for today";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+      } else {
+        document.getElementById("check-in-btn").classList.remove("hidden");
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("status-text").innerText = "Currently checked out";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+      }
+    } else {
+      document.getElementById("check-in-btn").classList.remove("hidden");
+      document.getElementById("check-out-btn").classList.add("hidden");
+      document.getElementById("status-text").innerText = "Currently checked out";
+      document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+    }
+
+    updateWorkStats(username);
+  });
+}
+
+function populateTechniciansDropdown() {
+  const datalist = document.getElementById('technicians-list');
+  datalist.innerHTML = '';
+  
+  const ref = database.ref('technicians');
+  ref.once("value", snapshot => {
+    snapshot.forEach(techSnapshot => {
+      if (techSnapshot.key !== "test1") { // Exclude test user
+        const option = document.createElement('option');
+        option.value = techSnapshot.key;
+        datalist.appendChild(option);
+      }
+    });
+  });
+}
+
+function printSheet() {
+  const month = document.getElementById("month-select").value;
+  if (!month) {
+    showNotification("Please select a month first", 'error');
+    return;
+  }
+
+  const year = new Date().getFullYear();
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  const monthName = monthNames[parseInt(month) - 1];
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Get all technicians
+  const techRef = database.ref("technicians");
+  techRef.once("value", techSnapshot => {
+    // Get all attendance records
+    const attendanceRef = database.ref("attendance");
+    attendanceRef.once("value", attendanceSnapshot => {
+      let printContent = `
+<html>
+<head>
+<title>Attendance Report - ${monthName} ${year}</title>
+<style>
+@media print {
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 20px;
+  }
+  .page {
+    page-break-after: always;
+    padding: 15px;
+  }
+  .page-header {
+    text-align: center;
+    margin-bottom: 20px;
+  }
+  .company-logo {
+    height: 70px;
+    margin-bottom: 10px;
+  }
+  .report-title {
+    font-size: 20px;
+    color: #234f1e;
+    margin-bottom: 5px;
+  }
+  .technician-info {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin-bottom: 15px;
+  }
+  .tech-image-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    overflow: hidden;
+    margin-bottom: 10px;
+    border: 2px solid #234f1e;
+    background-color: #f5f5f5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .tech-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .default-icon {
+    font-size: 40px;
+    color: #ccc;
+  }
+  .tech-name {
+    font-size: 18px;
+    font-weight: bold;
+    margin-top: 10px;
+  }
+  .month-title {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 15px;
+    background-color: #f0f0f0;
+    padding: 8px;
+    border-radius: 4px;
+  }
+  .attendance-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .attendance-table th {
+    background-color: #234f1e;
+    color: white;
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  .attendance-table td {
+    padding: 8px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  .attendance-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  .summary-box {
+    background-color: #f5f5f5;
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+  }
+  .summary-item {
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    border-bottom: 1px dashed #ccc;
+    padding-bottom: 5px;
+  }
+  .summary-value {
+    font-weight: bold;
+    color: #234f1e;
+  }
+  .footer {
+    text-align: center;
+    font-size: 12px;
+    color: #777;
+    margin-top: 30px;
+    padding-top: 10px;
+    border-top: 1px solid #eee;
+  }
+  .timezone-note {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+  }
+  .notes {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    font-style: italic;
+  }
+  .absent {
+    color: #f44336;
+  }
+  .missed {
+    color: #ff9800;
+  }
+  .late {
+    color: #2196F3;
+  }
+  .manual {
+    color: #4CAF50;
+  }
+  .signature-line {
+    margin-top: 50px;
+    border-top: 1px solid #000;
+    width: 200px;
+    display: inline-block;
+    text-align: center;
+    padding-top: 5px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="timezone-note">Timezone: ${timezone}</div>
+`;
+
+      // For each technician, create a page
+      techSnapshot.forEach(techData => {
+        const techId = techData.key;
+        if (techId === "test1") return; // Skip test technician
+        const techInfo = techData.val();
+        const daysInMonth = new Date(year, parseInt(month), 0).getDate();
+        let totalHours = 0;
+        let daysWorked = 0;
+        let totalShifts = 0;
+        let daysAbsent = 0;
+        let missedCheckouts = 0;
+        let lateEntries = 0;
+
+        // Get technician image
+        const techImage = techInfo.image ?
+          `<img src="${techInfo.image}" class="tech-image" alt="${techId}">` :
+          '<i class="fas fa-user default-icon"></i>';
+
+        // Start technician page
+        printContent += `
+<div class="page">
+  <div class="page-header">
+    <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="company-logo" />
+    <h2 class="report-title">Attendance Report</h2>
+    <div class="technician-info">
+      <div class="tech-image-container">
+        ${techImage}
+      </div>
+      <div class="tech-name">${techId}</div>
+    </div>
+    <div class="month-title">${monthName} ${year}</div>
+  </div>
+  <table class="attendance-table">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Day</th>
+        <th>Check In</th>
+        <th>Check Out</th>
+        <th>Worked Hours</th>
+        <th>Shifts Details</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+`;
+
+        // Add rows for each day of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${month}-${day.toString().padStart(2, '0')}`;
+          const dateObj = new Date(dateStr);
+          const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          const isFriday = dayName === 'Fri';
+
+          // Get attendance data for this day
+          const attendanceData = attendanceSnapshot.child(`${techId}/${dateStr}`).val();
+          let checkIn = '-';
+          let checkOut = '-';
+          let workedHours = '-';
+          let shifts = '-';
+          let shiftsDetails = '-';
+          let notes = '';
+
+          if (attendanceData) {
+            checkIn = attendanceData.checkIn || '-';
+            checkOut = attendanceData.checkOut || '-';
+            workedHours = attendanceData.workedHours || '-';
+            shifts = attendanceData.shifts || '-';
+            
+            // Format shifts details
+            if (shifts !== '-') {
+              if (shifts.includes('-')) {
+                const shiftParts = shifts.split('-');
+                shiftsDetails = shiftParts.map(s => `Shift ${s}`).join(' + ');
+              } else if (shifts !== '0') {
+                shiftsDetails = `Shift ${shifts}`;
+              } else {
+                shiftsDetails = 'No valid shift';
+              }
+            }
+
+            if (attendanceData.workedHours) {
+              totalHours += parseFloat(attendanceData.workedHours);
+              daysWorked++;
+              if (attendanceData.shifts) {
+                if (attendanceData.shifts.includes('-')) {
+                  totalShifts += attendanceData.shifts.split('-').length;
+                } else if (attendanceData.shifts !== '0') {
+                  totalShifts += 1;
+                }
+              }
+              
+              // Check for late entry
+              if (checkIn !== '-') {
+                const [hours, minutes] = checkIn.split(':').map(Number);
+                const checkInTime = hours * 60 + minutes;
+                
+                if (isFriday) {
+                  // Late for Friday shifts
+                  if ((shifts === '1' || shifts === '1-2') && checkInTime > 8 * 60 + 30) {
+                    notes += '<span class="late">Late Entry</span>';
+                    lateEntries++;
+                  } else if ((shifts === '2' || shifts === '2-3') && checkInTime > 20 * 60 + 30) {
+                    notes += '<span class="late">Late Entry</span>';
+                    lateEntries++;
+                  }
+                } else {
+                  // Late for regular days
+                  if ((shifts === '1' || shifts === '1-2') && checkInTime > 8 * 60 + 30) {
+                    notes += '<span class="late">Late Entry</span>';
+                    lateEntries++;
+                  } else if ((shifts === '2' || shifts === '2-3') && checkInTime > 16 * 60 + 30) {
+                    notes += '<span class="late">Late Entry</span>';
+                    lateEntries++;
+                  } else if ((shifts === '3' || shifts === '3-1') && checkInTime > 0 * 60 + 30) {
+                    notes += '<span class="late">Late Entry</span>';
+                    lateEntries++;
+                  }
+                }
+              }
+              
+              // Check for missed checkout
+              if (checkIn !== '-' && checkOut === '-') {
+                notes += notes ? ', <span class="missed">Missed Check-out</span>' : '<span class="missed">Missed Check-out</span>';
+                missedCheckouts++;
+              }
+              
+              // Check for manual entry
+              if (attendanceData.manualEntry) {
+                notes += notes ? ', <span class="manual">Manual Entry</span>' : '<span class="manual">Manual Entry</span>';
+              }
+            }
+          } else {
+            // No attendance data - absent
+            notes = '<span class="absent">Absent</span>';
+            daysAbsent++;
+          }
+
+          printContent += `
+      <tr>
+        <td>${dateStr}</td>
+        <td>${dayName}</td>
+        <td>${checkIn}</td>
+        <td>${checkOut}</td>
+        <td>${workedHours}</td>
+        <td>${shiftsDetails}</td>
+        <td>${notes}</td>
+      </tr>
+`;
+        }
+
+        // Close table and add summary
+        printContent += `
+    </tbody>
+  </table>
+  <div class="summary-box">
+    <div class="summary-item">
+      <span>Total Worked Days:</span>
+      <span class="summary-value">${daysWorked}</span>
+    </div>
+    <div class="summary-item">
+      <span>Total Absent Days:</span>
+      <span class="summary-value">${daysAbsent}</span>
+    </div>
+    <div class="summary-item">
+      <span>Total Hours:</span>
+      <span class="summary-value">${totalHours.toFixed(2)} hours</span>
+    </div>
+    <div class="summary-item">
+      <span>Total Shifts:</span>
+      <span class="summary-value">${totalShifts}</span>
+    </div>
+    <div class="summary-item">
+      <span>Missed Check-outs:</span>
+      <span class="summary-value">${missedCheckouts}</span>
+    </div>
+    <div class="summary-item">
+      <span>Late Entries:</span>
+      <span class="summary-value">${lateEntries}</span>
+    </div>
+    <div class="summary-item">
+      <span>Average Hours Per Day:</span>
+      <span class="summary-value">${daysWorked > 0 ? (totalHours / daysWorked).toFixed(2) : '0.00'} hours</span>
+    </div>
+  </div>
+  <div style="text-align: center; margin-top: 40px;">
+    <div class="signature-line">Engineer's Signature</div>
+  </div>
+  <div class="footer">
+    Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}<br>
+    Timezone: ${timezone}
+  </div>
+</div>
+`;
+      });
+
+      printContent += `
+</body>
+</html>
+`;
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+      showNotification('Print sheet generated successfully', 'success');
+    });
+  });
+}
+
+function addTechnician() {
+  const username = prompt("Enter technician username:");
+  if (!username) return;
+  
+  // Check if technician already exists
+  const ref = database.ref(`technicians/${username}`);
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      showNotification(`Technician '${username}' already exists. Please choose a different name.`, 'error');
+      return;
+    }
+    
+    const password = prompt("Enter technician password:");
+    if (!password) return;
+    const imageUrl = prompt("(Optional) Enter technician image URL:");
+    
+    ref.set({ password, image: imageUrl || "" })
+      .then(() => {
+        showNotification("Technician added successfully!", 'success');
+        viewTechnicians();
+        populateTechniciansDropdown();
+      })
+      .catch(error => {
+        showNotification("Error adding technician: " + error.message, 'error');
+      });
+  });
+}
+
+function viewTechnicians() {
+  const ref = database.ref("technicians");
+  ref.once("value", snapshot => {
+    let html = "<h3 class='section-title'>Technicians List</h3><div class='tech-list'>";
+    snapshot.forEach(techSnapshot => {
+      if (techSnapshot.key !== "test1") { // Exclude test user
+        const techData = techSnapshot.val();
+        html += `
+<div class="tech-card">
+  ${techData.image ? `<img src="${techData.image}" class="tech-image" alt="${techSnapshot.key}">` : ''}
+  <div class="tech-name">${techSnapshot.key}</div>
+  <div class="tech-action">
+    <button class="delete-btn" onclick="deleteTechnician('${techSnapshot.key}')">Delete</button>
+  </div>
+</div>
+`;
+      }
+    });
+    html += "</div>";
+    document.getElementById("technician-list").innerHTML = html;
+    document.getElementById("technician-list").classList.remove("hidden");
+    document.getElementById("attendance-table").classList.add("hidden");
+  });
+}
+
+function deleteTechnician(username) {
+  if (!confirm(`Are you sure you want to delete technician "${username}"?`)) return;
+  
+  // Delete technician from technicians node
+  const techRef = database.ref(`technicians/${username}`);
+  techRef.remove()
+    .then(() => {
+      // Also delete the device fingerprint if exists
+      const deviceRef = database.ref(`deviceFingerprints/${username}`);
+      deviceRef.remove()
+        .then(() => {
+          showNotification("Technician deleted successfully and device removed!", 'success');
+          viewTechnicians();
+          populateTechniciansDropdown();
+        })
+        .catch(error => {
+          showNotification("Technician deleted but device removal failed: " + error.message, 'error');
+        });
+    })
+    .catch(error => {
+      showNotification("Error deleting technician: " + error.message, 'error');
+    });
+}
+
+function viewAttendance() {
+  const month = document.getElementById("month-select").value;
+  if (!month) {
+    showNotification("Please select a month first", 'error');
+    return;
+  }
+
+  const ref = database.ref("attendance");
+  ref.once("value", snapshot => {
+    const tbody = document.querySelector("#table-output tbody");
+    tbody.innerHTML = "";
+    
+    // جمع جميع السجلات في مصفوفة للترتيب
+    const records = [];
+    
+    snapshot.forEach(userSnapshot => {
+      const user = userSnapshot.key;
+      userSnapshot.forEach(dateSnapshot => {
+        const date = dateSnapshot.key;
+        const dateParts = date.split('-');
+        const recordMonth = dateParts[1];
+        if (recordMonth === month) {
+          const data = dateSnapshot.val();
+          
+          // Format shifts details
+          let shiftsDetails = '-';
+          if (data.shifts) {
+            if (data.shifts.includes('-')) {
+              const shiftParts = data.shifts.split('-');
+              shiftsDetails = shiftParts.map(s => `Shift ${s}`).join(' + ');
+            } else if (data.shifts !== '0') {
+              shiftsDetails = `Shift ${data.shifts}`;
+            } else {
+              shiftsDetails = 'No valid shift';
+            }
+          }
+          
+          records.push({
+            user,
+            date,
+            checkIn: data.checkIn || '-',
+            checkOut: data.checkOut || '-',
+            workedHours: data.workedHours || '0.00',
+            shiftsDetails: shiftsDetails
+          });
+        }
+      });
+    });
+    
+    // ترتيب السجلات من الأحدث إلى الأقدم
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // عرض السجلات المرتبة
+    records.forEach(record => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+<td>${record.user}</td>
+<td>${record.date}</td>
+<td>${record.checkIn}</td>
+<td>${record.checkOut}</td>
+<td>${record.workedHours}</td>
+<td>${record.shiftsDetails}</td>
+<td>
+  <button class="delete-btn" onclick="deleteEntry('${record.user}','${record.date}')">Delete</button>
+</td>
+`;
+      tbody.appendChild(row);
+    });
+    
+    document.getElementById("attendance-table").classList.remove("hidden");
+    document.getElementById("technician-list").classList.add("hidden");
+  });
+}
+
+function viewDeviceManagement() {
+  const deviceRef = database.ref("deviceFingerprints");
+  const techRef = database.ref("technicians");
+  
+  // جلب كل من أجهزة الفنيين وقائمة الفنيين
+  Promise.all([deviceRef.once("value"), techRef.once("value")])
+    .then(([deviceSnapshot, techSnapshot]) => {
+      let html = "<h3>Device Assignments</h3><div class='device-list'>";
+      
+      if (!deviceSnapshot.exists() || deviceSnapshot.numChildren() === 0) {
+        html += "<p>No device assignments found</p>";
+      } else {
+        // إنشاء مجموعة من الفنيين الحاليين للتحقق منها
+        const currentTechnicians = new Set();
+        techSnapshot.forEach(tech => {
+          if (tech.key !== "test1") { // استبعاد المستخدم التجريبي
+            currentTechnicians.add(tech.key);
+          }
+        });
+        
+        // عرض فقط الأجهزة التي تنتمي إلى فنيين حالين
+        deviceSnapshot.forEach(deviceSnapshot => {
+          const username = deviceSnapshot.key;
+          
+          // التحقق مما إذا كان الفني لا يزال موجودًا في قاعدة البيانات
+          if (currentTechnicians.has(username)) {
+            html += `
+<div class="device-item">
+  <span>${username}</span>
+  <div class="device-actions">
+    <button class="temporary-access-btn" onclick="grantTemporaryAccess('${username}')">Allow Once</button>
+    <button class="delete-btn" onclick="resetDevice('${username}')">Reset</button>
+  </div>
+</div>
+`;
+          }
+        });
+      }
+      
+      html += "</div>";
+      document.getElementById("device-list").innerHTML = html;
+      
+      // إضافة وظيفة البحث
+      const searchInput = document.getElementById('device-search');
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const deviceItems = document.querySelectorAll('.device-item');
+        
+        deviceItems.forEach(item => {
+          const username = item.querySelector('span').textContent.toLowerCase();
+          if (username.includes(searchTerm)) {
+            item.style.display = 'flex';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    })
+    .catch(error => {
+      console.error("Error loading device management:", error);
+      showNotification("Failed to load device management: " + error.message, "error");
+    });
+}
+
+function grantTemporaryAccess(username) {
+  if (!confirm(`Grant temporary access to ${username} from another device?`)) return;
+  
+  const ref = database.ref(`temporaryAccess/${username}`);
+  ref.set({
+    allowed: true,
+    timestamp: new Date().getTime()
+  }).then(() => {
+    showNotification("Temporary access granted for next login only", 'success');
+    viewDeviceManagement();
+  }).catch(error => {
+    showNotification("Error granting temporary access: " + error.message, 'error');
+  });
+}
+
+function resetDevice(username) {
+  if (!confirm(`Are you sure you want to reset device for ${username}? They will need to register their device on next login.`)) return;
+  
+  const ref = database.ref(`deviceFingerprints/${username}`);
+  ref.remove()
+    .then(() => {
+      showNotification("Device reset successfully. User will need to register device on next login.", 'success');
+      viewDeviceManagement();
+    })
+    .catch(error => {
+      showNotification("Error resetting device: " + error.message, 'error');
+    });
+}
+
+function deleteEntry(user, date) {
+  if (!confirm(`Are you sure you want to delete this entry?\nUser: ${user}\nDate: ${date}`)) return;
+  const ref = database.ref(`attendance/${user}/${date}`);
+  ref.remove()
+    .then(() => {
+      showNotification("Entry deleted successfully!", 'success');
+      viewAttendance();
+    })
+    .catch(error => {
+      showNotification("Error deleting entry: " + error.message, 'error');
+    });
+}
+
+function selectShift(element, shift) {
+  document.querySelectorAll('.shift-option').forEach(opt => {
+    opt.classList.remove('selected');
+  });
+  element.classList.add('selected');
+  selectedShifts = shift;
+  document.getElementById('manual-shifts').value = shift;
+}
+
+function addTestTechnician() {
+  const ref = database.ref("technicians/test1");
+  ref.once("value", snapshot => {
+    if (!snapshot.exists()) {
+      ref.set({ password: "1234", image: "" });
+    }
+  });
+}
+
+function setupServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch(err => console.log('Service Worker Registration Failed: ', err));
+  }
+}
+
+function checkInstallPromotion() {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-container').classList.remove('hidden');
+  });
+
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      deferredPrompt = null;
+      document.getElementById('install-container').classList.add('hidden');
+    }
+  });
+}
+
+function loadRememberMe() {
+  const rememberMe = localStorage.getItem('rememberMe') === 'true';
+  if (rememberMe) {
+    const savedUsername = localStorage.getItem('username');
+    const savedPassword = localStorage.getItem('password');
+    if (savedUsername && savedPassword) {
+      document.getElementById('username').value = savedUsername;
+      document.getElementById('password').value = savedPassword;
+      document.getElementById('remember-me').checked = true;
+    }
+  }
+}
+
+function saveRememberMe(username, password, remember) {
+  if (remember) {
+    localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
+    localStorage.setItem('rememberMe', 'true');
+  } else {
+    localStorage.removeItem('username');
+    localStorage.removeItem('password');
+    localStorage.setItem('rememberMe', 'false');
+  }
+}
+
+async function login() {
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const rememberMe = document.getElementById("remember-me").checked;
+  const loginError = document.getElementById("login-error");
+
+  loginError.innerText = "";
+
+  // تسجيل دخول الأدمن
+  if (username === "admin" && password === "admin") {
+    isAdmin = true;
+    saveRememberMe(username, password, rememberMe);
+    showAdminPanel();
+    showNotification('Admin login successful', 'success');
+    return;
+  }
+
+  // تسجيل دخول الفنيين
+  const ref = database.ref(`technicians/${username}`);
+  ref.once("value", snapshot => {
+    if (snapshot.exists() && snapshot.val().password === password) {
+      // التحقق من بصمة الجهاز
+      checkDeviceFingerprint(username)
+        .then(() => {
+          saveRememberMe(username, password, rememberMe);
+          showUserScreen(username, snapshot.val());
+          showNotification(`Welcome back, ${username}!`, 'success');
+        })
+        .catch(error => {
+          loginError.innerText = error;
+          showNotification('Login failed: ' + error, 'error');
+        });
+    } else {
+      loginError.innerText = "Invalid username or password. Please try again.";
+      showNotification('Login failed. Invalid credentials', 'error');
+    }
+  });
+}
+
+// تعديل دالة showUserScreen لضمان تحميل الصورة والاسم بشكل صحيح
+function showUserScreen(username, userData) {
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("user-screen").classList.remove("hidden");
+  document.getElementById("user-name").innerText = username;
+  document.getElementById("displayed-user-name").innerText = username;
+  
+  // تحميل صورة الفني
+  const userImage = document.getElementById('user-image');
+  const defaultIcon = document.getElementById('default-user-icon');
+  
+  if (userData && userData.image) {
+    userImage.src = userData.image;
+    userImage.onload = function() {
+      userImage.classList.remove('hidden');
+      defaultIcon.classList.add('hidden');
+    };
+    userImage.onerror = function() {
+      userImage.classList.add('hidden');
+      defaultIcon.classList.remove('hidden');
+    };
+  } else {
+    userImage.classList.add('hidden');
+    defaultIcon.classList.remove('hidden');
+  }
+  
+  setTimeout(() => {
+    document.getElementById("welcome-message").classList.add("hidden");
+  }, 5000);
+
+  checkTodayStatus(username);
+}
+
+function showAdminPanel() {
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("admin-screen").classList.remove("hidden");
+  
+  // تحميل إعدادات النسخ الاحتياطي التلقائي
+  loadBackupSettings();
+  
+  // تحميل قائمة الفنيين في القائمة المنسدلة
+  populateTechniciansDropdown();
+}
+
+function loadBackupSettings() {
+  const ref = database.ref('backupSettings');
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      const settings = snapshot.val();
+      autoBackupEnabled = settings.enabled !== false; // Default to true if not set
+      backupTime = settings.time || "00:00";
+      
+      document.getElementById('auto-backup-toggle').checked = autoBackupEnabled;
+      document.getElementById('backup-time').value = backupTime;
+    }
+    
+    // جدولة النسخ التلقائية بناءً على الإعدادات
+    scheduleDailyBackups();
+  });
+}
+
+function saveBackupSettings() {
+  const enabled = document.getElementById('auto-backup-toggle').checked;
+  const time = document.getElementById('backup-time').value;
+  
+  const ref = database.ref('backupSettings');
+  ref.set({
+    enabled,
+    time
+  }).then(() => {
+    autoBackupEnabled = enabled;
+    backupTime = time;
+    scheduleDailyBackups();
+    showNotification("Backup settings saved", "success");
+  }).catch(error => {
+    showNotification("Failed to save backup settings: " + error.message, "error");
+  });
+}
+
+function logout() {
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("user-screen").classList.add("hidden");
+  document.getElementById("admin-screen").classList.add("hidden");
+  document.getElementById("password").value = "";
+  document.getElementById("login-error").innerText = "";
+  isAdmin = false;
+  showNotification('Logged out successfully', 'info');
+}
+
+// دالة لطلب إذن الإشعارات
+function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    console.log("This browser does not support notifications.");
+    return;
+  }
+  
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      console.log("Notification permission granted");
+    }
+  });
+}
+
+// إنشاء ملف Manifest لتثبيت التطبيق
+function createManifest() {
+  const manifest = {
+    "name": "Food Trip",
+    "short_name": "Food Trip",
+    "description": "Employee Attendance Management System",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#234f1e",
+    "theme_color": "#234f1e",
+    "icons": [
+      {
+        "src": "https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  };
+  
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestURL = URL.createObjectURL(blob);
+  document.querySelector('link[rel="manifest"]').href = manifestURL;
+}
+
+// دالة للتبديل بين محتوى الأزرار الموحدة
+function toggleUnifiedContent(type) {
+  // إخفاء جميع المحتويات أولاً
+  document.querySelectorAll('.unified-content').forEach(content => {
+    content.classList.remove('active');
+  });
+  
+  // إظهار المحتوى المحدد
+  const content = document.getElementById(`${type}-unified-content`);
+  content.classList.add('active');
+  
+  // إذا كان نوع الجهاز، قم بتحميل قائمة الأجهزة
+  if (type === 'device') {
+    viewDeviceManagement();
+  }
+  
+  // إذا كان نوع النسخ الاحتياطي، قم بتحميل إعدادات النسخ الاحتياطي
+  if (type === 'backup') {
+    loadBackupSettings();
+  }
+}
+
+window.onload = () => {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const themeIcon = document.getElementById('theme-icon');
+  themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  
+  // إخفاء شاشة البداية بعد 5 ثواني
+  setTimeout(() => {
+    document.getElementById("main-app").classList.remove("hidden");
+  }, 5000);
+  
+  checkInstallPromotion();
+  
+  // إنشاء بصمة الجهاز
+  deviceFingerprint = generateDeviceFingerprint();
+  document.getElementById('device-info').textContent = `Device ID: ${deviceFingerprint.substring(0, 8)}...`;
+  
+  addTestTechnician();
+
+  const now = new Date();
+  const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+  document.getElementById("month-select").value = currentMonth;
+
+  setupServiceWorker();
+  loadRememberMe();
+  getLocalTime();
+  
+  // إنشاء ملف Manifest لتثبيت التطبيق
+  createManifest();
+  
+  // طلب إذن الإشعارات
+  requestNotificationPermission();
+  
+  // إعداد معالجات أحداث النسخ الاحتياطي التلقائي
+  document.getElementById('auto-backup-toggle').addEventListener('change', function() {
+    saveBackupSettings();
+  });
+  
+  document.getElementById('backup-time').addEventListener('change', function() {
+    saveBackupSettings();
+  });
+  
+  // جدولة النسخ اليومية التلقائية
+  scheduleDailyBackups();
+  
+  // تخزين تاريخ آخر تسجيل خروج
+  let lastLogoutDate = localStorage.getItem('lastLogoutDate');
+  
+  // عند تسجيل الخروج
+  window.logout = function() {
+    const today = new Date().toISOString().split('T')[0];
+    localStorage.setItem('lastLogoutDate', today);
+    document.getElementById("login-screen").classList.remove("hidden");
+    document.getElementById("user-screen").classList.add("hidden");
+    document.getElementById("admin-screen").classList.add("hidden");
+    document.getElementById("password").value = "";
+    document.getElementById("login-error").innerText = "";
+    isAdmin = false;
+    showNotification('Logged out successfully', 'info');
+  };
+  
+  // عند تحميل الصفحة، التحقق مما إذا كان اليوم مختلف عن يوم آخر تسجيل خروج
+  const today = new Date().toISOString().split('T')[0];
+  if (lastLogoutDate && lastLogoutDate !== today) {
+    // إذا كان اليوم مختلف، إظهار زر تسجيل الدخول
+    document.getElementById('login-screen').classList.remove('hidden');
+  }
+};
+</script>
+</body>
+</html>
