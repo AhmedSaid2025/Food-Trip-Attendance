@@ -1,0 +1,3821 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<meta name="theme-color" content="#234f1e">
+<meta name="description" content="Food Trip Attendance System">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Food Trip Attendance</title>
+
+<!-- Manifest and Icons -->
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png">
+<link rel="apple-touch-icon" href="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png">
+
+<!-- Stylesheets -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/toastify-js/src/toastify.min.css">
+
+<!-- Service Worker Registration -->
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js')
+        .then(registration => {
+          console.log('ServiceWorker registration successful');
+        })
+        .catch(err => {
+          console.log('ServiceWorker registration failed: ', err);
+        });
+    });
+  }
+</script>
+
+<style>
+:root {
+  --primary-color: #234f1e;
+  --secondary-color: #f5e6d5;
+  --success-color: #4CAF50;
+  --danger-color: #f44336;
+  --warning-color: #ff9800;
+  --info-color: #2196F3;
+  --text-color: #333;
+  --background-color: #f5e6d5;
+  --card-bg: white;
+  --input-bg: white;
+  --table-row-even: #f8f9fa;
+  --table-row-hover: #e9f7fe;
+  --border-color: #ddd;
+}
+
+[data-theme="dark"] {
+  --primary-color: #3a7d34;
+  --secondary-color: #1a1a1a;
+  --success-color: #388e3c;
+  --danger-color: #d32f2f;
+  --warning-color: #ffa000;
+  --info-color: #1976d2;
+  --text-color: #f0f0f0;
+  --background-color: #121212;
+  --card-bg: #1e1e1e;
+  --input-bg: #2d2d2d;
+  --table-row-even: #2a2a2a;
+  --table-row-hover: #333;
+  --border-color: #444;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  background-color: var(--background-color);
+  color: var(--text-color);
+  text-align: center;
+  -webkit-user-select: none;
+  user-select: none;
+  touch-action: manipulation;
+  transition: background-color 0.3s, color 0.3s;
+}
+
+.logo {
+  width: 120px;
+  margin: 20px auto;
+  display: block;
+}
+
+button {
+  background-color: var(--primary-color);
+  color: white;
+  border: none;
+  padding: 12px 24px;
+  margin: 10px auto;
+  cursor: pointer;
+  border-radius: 5px;
+  font-size: 16px;
+  min-width: 120px;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+button:hover, button:active {
+  opacity: 0.9;
+  transform: translateY(-2px);
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.hidden {
+  display: none;
+}
+
+#splash-screen {
+  background-color: var(--secondary-color);
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+  animation: fadeOut 1.5s 5s forwards;
+}
+
+@keyframes fadeOut {
+  from { opacity: 1; }
+  to { opacity: 0; visibility: hidden; }
+}
+
+.credit {
+  font-size: 12px;
+  color: #555;
+  margin-top: 20px;
+  animation: pulseCredit 2s infinite;
+}
+
+@keyframes pulseCredit {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.app {
+  padding: 20px;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.stats-container {
+  margin: 20px auto;
+  padding: 15px;
+  background-color: var(--card-bg);
+  border-radius: 10px;
+  max-width: 300px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.welcome-message {
+  font-size: 18px;
+  color: #2e7d32;
+  margin-bottom: 20px;
+  animation: fadeIn 1s;
+  background-color: #d4edda;
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid #c3e6cb;
+}
+
+.goodbye-message {
+  font-size: 18px;
+  color: #0c5460;
+  background-color: #d1ecf1;
+  border: 1px solid #bee5eb;
+  padding: 15px;
+  border-radius: 8px;
+  margin-top: 20px;
+  animation: fadeIn 0.5s;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.delete-btn {
+  background-color: var(--danger-color);
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+}
+
+.month-selector {
+  margin: 10px;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid var(--border-color);
+  width: 120px; /* تم تصغير العرض من 150px إلى 120px */
+  font-size: 14px; /* تم تصغير حجم الخط من 16px إلى 14px */
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.manual-entry {
+  background-color: var(--card-bg);
+  padding: 15px;
+  border-radius: 10px;
+  margin: 20px auto;
+  max-width: 400px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.05);
+}
+
+.manual-entry input, .manual-entry select {
+  margin: 5px;
+  padding: 12px;
+  width: 90%;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.user-actions {
+  margin: 20px 0;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin: 15px 0;
+  gap: 10px;
+}
+
+.status-indicator {
+  height: 15px;
+  width: 15px;
+  border-radius: 50%;
+  display: inline-block;
+  margin-right: 5px;
+}
+
+.status-checked-in {
+  background-color: var(--success-color);
+}
+
+.status-checked-out {
+  background-color: var(--danger-color);
+}
+
+.user-status {
+  font-weight: bold;
+  margin: 10px 0;
+  padding: 8px;
+  border-radius: 5px;
+  background-color: var(--card-bg);
+  font-size: 16px;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  margin: 20px 0;
+  background: var(--card-bg);
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+  font-size: 14px;
+}
+
+th, td {
+  padding: 12px 8px;
+  text-align: center;
+  border-bottom: 1px solid var(--border-color);
+}
+
+th {
+  background-color: var(--primary-color);
+  color: white;
+  font-weight: bold;
+}
+
+tr:nth-child(even) {
+  background-color: var(--table-row-even);
+}
+
+tr:hover {
+  background-color: var(--table-row-hover);
+}
+
+.admin-panel {
+  background-color: var(--card-bg);
+  padding: 20px;
+  border-radius: 10px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+  margin-top: 20px;
+}
+
+.admin-section {
+  margin: 20px 0;
+}
+
+.section-title {
+  color: var(--primary-color);
+  border-bottom: 2px solid var(--primary-color);
+  padding-bottom: 8px;
+  margin-bottom: 15px;
+  display: inline-block;
+  font-size: 18px;
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.work-stats {
+  font-weight: bold;
+  font-size: 1.1em;
+  margin: 5px 0;
+}
+
+.install-btn {
+  background-color: var(--warning-color);
+  margin-top: 20px;
+}
+
+.login-logo {
+  width: 150px;
+  margin: 0 auto 20px;
+  display: block;
+}
+
+.form-control {
+  margin: 10px auto;
+  padding: 12px;
+  width: 80%;
+  max-width: 300px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  font-size: 16px;
+  display: block;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.remember-me {
+  margin: 15px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.remember-me input {
+  margin-right: 8px;
+}
+
+.user-profile {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 20px 0;
+}
+
+.user-image-container {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--primary-color);
+  overflow: hidden;
+  margin-bottom: 15px;
+  background-color: var(--card-bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+}
+
+.user-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.default-user-icon {
+  font-size: 60px;
+  color: #ccc;
+}
+
+.tech-image {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid var(--primary-color);
+  margin-bottom: 10px;
+}
+
+.tech-card {
+  background: var(--card-bg);
+  border-radius: 10px;
+  padding: 15px;
+  margin: 10px;
+  box-shadow: 0 3px 10px rgba(0,0,0,0.08);
+  display: inline-block;
+  text-align: center;
+  width: 200px;
+  position: relative;
+}
+
+.tech-name {
+  font-weight: bold;
+  margin: 5px 0;
+  font-size: 16px;
+}
+
+.tech-list {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.tech-action {
+  margin-top: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+.shift-selector {
+  margin: 10px 0;
+  padding: 10px;
+  background: var(--card-bg);
+  border-radius: 8px;
+}
+
+.shift-option {
+  display: inline-block;
+  margin: 5px;
+  padding: 8px 12px;
+  background: var(--input-bg);
+  border-radius: 4px;
+  cursor: pointer;
+}
+
+.shift-option.selected {
+  background: var(--primary-color);
+  color: white;
+}
+
+.theme-toggle {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background-color: var(--primary-color);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  z-index: 1000;
+  border: none;
+}
+
+.timezone-info {
+  font-size: 12px;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-top: 5px;
+}
+
+.device-info {
+  font-size: 12px;
+  color: var(--text-color);
+  opacity: 0.7;
+  margin-top: 5px;
+  padding: 5px;
+  background: var(--card-bg);
+  border-radius: 4px;
+}
+
+.confirmation-dialog {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.dialog-content {
+  background: var(--card-bg);
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 80%;
+  max-height: 80%;
+  overflow: auto;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+}
+
+.dialog-title {
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.dialog-message {
+  margin-bottom: 20px;
+}
+
+.dialog-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+}
+
+.dialog-button {
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  border: none;
+}
+
+.dialog-button-primary {
+  background: var(--primary-color);
+  color: white;
+}
+
+.dialog-button-secondary {
+  background: var(--danger-color);
+  color: white;
+}
+
+.shift-summary {
+  margin: 15px 0;
+  padding: 10px;
+  background: var(--card-bg);
+  border-radius: 8px;
+  border: 1px solid var(--border-color);
+}
+
+.shift-summary-title {
+  font-weight: bold;
+  margin-bottom: 8px;
+}
+
+.shift-summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin: 5px 0;
+}
+
+.shift-summary-label {
+  font-weight: bold;
+}
+
+.shift-summary-value {
+  color: var(--primary-color);
+}
+
+.device-management {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+.device-list {
+  margin: 15px 0;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.device-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.device-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.temporary-access-btn {
+  background-color: var(--warning-color);
+  padding: 5px 10px;
+  font-size: 12px;
+  border-radius: 4px;
+  color: white;
+}
+
+.location-error {
+  color: var(--danger-color);
+  font-weight: bold;
+  margin: 10px 0;
+}
+
+.backup-section {
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 20px auto;
+  max-width: 500px;
+}
+
+.backup-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.backup-btn {
+  background-color: var(--info-color);
+}
+
+.backup-history {
+  margin-top: 20px;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 5px;
+  padding: 10px;
+}
+
+.backup-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.backup-item:last-child {
+  border-bottom: none;
+}
+
+.backup-info {
+  flex: 1;
+  text-align: left;
+}
+
+.backup-actions {
+  display: flex;
+  gap: 5px;
+}
+
+.search-container {
+  position: relative;
+  margin-bottom: 15px;
+  width: 100%;
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 5px;
+}
+
+.search-input {
+  width: 100%;
+  padding: 10px 35px 10px 10px;
+  border: none;
+  background-color: var(--input-bg);
+  color: var(--text-color);
+  box-sizing: border-box;
+}
+
+.search-icon {
+  position: absolute;
+  right: 15px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--text-color);
+}
+
+.backup-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 15px;
+}
+
+.backup-control-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.backup-auto-toggle {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.switch {
+  position: relative;
+  display: inline-block;
+  width: 60px;
+  height: 34px;
+}
+
+.switch input {
+  opacity: 0;
+  width: 0;
+  height: 0;
+}
+
+.slider {
+  position: absolute;
+  cursor: pointer;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: #ccc;
+  transition: .4s;
+  border-radius: 34px;
+}
+
+.slider:before {
+  position: absolute;
+  content: "";
+  height: 26px;
+  width: 26px;
+  left: 4px;
+  bottom: 4px;
+  background-color: white;
+  transition: .4s;
+  border-radius: 50%;
+}
+
+input:checked + .slider {
+  background-color: var(--primary-color);
+}
+
+input:checked + .slider:before {
+  transform: translateX(26px);
+}
+
+.backup-time-selector {
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border-color);
+  background-color: var(--input-bg);
+  color: var(--text-color);
+}
+
+.unified-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 12px 20px;
+  margin: 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-size: 16px;
+  min-width: 180px;
+}
+
+.unified-button i {
+  font-size: 18px;
+}
+
+.backup-unified-btn {
+  background-color: var(--info-color);
+}
+
+.device-unified-btn {
+  background-color: var(--warning-color);
+}
+
+.unified-content {
+  display: none;
+  background: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px auto;
+  max-width: 500px;
+  box-shadow: 0 3px 6px rgba(0,0,0,0.1);
+}
+
+.unified-content.active {
+  display: block;
+}
+
+.print-btn-container {
+  display: flex;
+  justify-content: center;
+  margin: 20px 0;
+}
+
+.signature-line {
+  margin-top: 50px;
+  border-top: 1px solid #000;
+  width: 200px;
+  display: inline-block;
+  text-align: center;
+  padding-top: 5px;
+}
+
+.datetime-input {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.datetime-input input {
+  flex: 1;
+}
+
+.connection-status {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+  padding: 5px 10px;
+  border-radius: 15px;
+  font-size: 12px;
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.connection-status.connected {
+  background-color: var(--success-color);
+  color: white;
+}
+
+.connection-status.disconnected {
+  background-color: var(--danger-color);
+  color: white;
+}
+
+.dashboard-stats {
+  background-color: var(--card-bg);
+  padding: 15px;
+  border-radius: 8px;
+  margin: 15px 0;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+}
+
+.dashboard-stat-item {
+  display: flex;
+  justify-content: space-between;
+  padding: 8px 0;
+  border-bottom: 1px dashed var(--border-color);
+}
+
+.dashboard-stat-label {
+  font-weight: bold;
+}
+
+.dashboard-stat-value {
+  color: var(--primary-color);
+  font-weight: bold;
+}
+
+.manual-entry-btn {
+  background-color: var(--warning-color);
+}
+
+.print-table {
+  width: 100%;
+  font-size: 12px;
+  border-collapse: collapse;
+}
+
+.print-table th, .print-table td {
+  padding: 6px;
+  border: 1px solid #ddd;
+  text-align: center;
+}
+
+.print-table th {
+  background-color: #f2f2f2;
+}
+
+.print-page {
+  page-break-after: always;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+}
+
+.print-page:last-child {
+  page-break-after: auto;
+}
+
+.print-header {
+  text-align: center;
+  margin-bottom: 15px;
+}
+
+.print-logo {
+  height: 60px;
+  margin-bottom: 10px;
+}
+
+.print-title {
+  font-size: 18px;
+  margin-bottom: 5px;
+}
+
+.print-tech-info {
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+.print-tech-image-container {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  margin: 0 auto 10px;
+  border: 2px solid #234f1e;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  background-color: #f5f5f5;
+}
+
+.print-tech-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.print-tech-name {
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.print-month-title {
+  text-align: center;
+  font-size: 16px;
+  margin-bottom: 10px;
+  padding: 5px;
+  background-color: #f5f5f5;
+}
+
+.print-summary {
+  margin-top: 15px;
+  padding: 10px;
+  background-color: #f9f9f9;
+  border-radius: 5px;
+}
+
+.print-summary-item {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 5px;
+}
+
+.print-summary-label {
+  font-weight: bold;
+}
+
+.print-summary-value {
+  color: #234f1e;
+}
+
+.print-footer {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 10px;
+  color: #666;
+}
+
+.print-notes {
+  font-size: 10px;
+  margin-top: 5px;
+  color: #666;
+}
+
+.print-absent {
+  color: #f44336;
+}
+
+.print-manual {
+  color: #4CAF50;
+}
+
+/* New styles for admin panel buttons */
+.admin-dashboard-section {
+  margin-bottom: 20px;
+}
+
+.admin-dashboard-content {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.admin-dashboard-title {
+  color: var(--primary-color);
+  margin-bottom: 10px;
+  text-align: center;
+}
+
+/* New styles for toggleable content */
+.toggle-content {
+  width: 100%;
+  margin-top: 10px;
+  display: none;
+}
+
+.toggle-content.active {
+  display: block;
+}
+
+/* New styles for statistics page */
+.print-stats-page {
+  page-break-after: always;
+  padding: 15px;
+  font-family: Arial, sans-serif;
+}
+
+.print-stats-title {
+  text-align: center;
+  font-size: 18px;
+  margin-bottom: 15px;
+  color: #234f1e;
+  font-weight: bold;
+}
+
+.print-stats-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+}
+
+.print-stats-table th, .print-stats-table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+  text-align: center;
+}
+
+.print-stats-table th {
+  background-color: #f2f2f2;
+}
+
+.print-notes-section {
+  margin-top: 30px;
+  border: 1px solid #ddd;
+  min-height: 150px;
+  padding: 10px;
+}
+
+.print-signature-section {
+  margin-top: 50px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.print-signature-box {
+  width: 45%;
+  text-align: center;
+}
+
+.print-signature-line {
+  border-top: 1px solid #000;
+  width: 200px;
+  display: inline-block;
+  margin-top: 50px;
+  padding-top: 5px;
+}
+
+@media (max-width: 600px) {
+  .app {
+    padding: 10px;
+  }
+  
+  button {
+    padding: 14px;
+    font-size: 15px;
+    width: 90%;
+    margin: 8px auto;
+    display: block;
+  }
+  
+  .action-buttons {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .month-selector {
+    width: 100%;
+    margin: 10px 0;
+  }
+  
+  table {
+    font-size: 12px;
+  }
+  
+  th, td {
+    padding: 8px 4px;
+  }
+  
+  .form-control {
+    width: 90%;
+  }
+  
+  .theme-toggle {
+    bottom: 10px;
+    right: 10px;
+    width: 40px;
+    height: 40px;
+  }
+  
+  .dialog-content {
+    max-width: 90%;
+    padding: 15px;
+  }
+  
+  .backup-buttons {
+    flex-direction: column;
+  }
+  
+  .backup-control-row {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 5px;
+  }
+  
+  .unified-button {
+    width: 90%;
+    margin: 8px auto;
+  }
+  
+  .datetime-input {
+    flex-direction: column;
+    gap: 0;
+  }
+  
+  .connection-status {
+    top: 5px;
+    right: 5px;
+    font-size: 10px;
+    padding: 3px 8px;
+  }
+  
+  .admin-dashboard {
+    grid-template-columns: 1fr;
+  }
+  
+  .admin-dashboard-content {
+    flex-direction: column;
+    align-items: center;
+  }
+}
+
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .print-page, .print-page *,
+  .print-stats-page, .print-stats-page * {
+    visibility: visible;
+  }
+  .print-page,
+  .print-stats-page {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    padding: 15px;
+    box-sizing: border-box;
+  }
+  .print-table {
+    font-size: 10px;
+  }
+  .print-table th, .print-table td {
+    padding: 4px;
+  }
+  /* إزالة الصفحة الزائدة التي تحتوي على معلومات التايم زون فقط */
+  .print-page:has(.print-footer:only-child) {
+    display: none;
+  }
+}
+</style>
+</head>
+<body>
+<div id="splash-screen">
+  <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="logo" />
+  <h1>Food Trip Attendance</h1>
+  <p>Employee Management System</p>
+  <p class="credit">Designed by Ahmed Said Shahin</p>
+</div>
+
+<div class="app hidden" id="main-app">
+  <!-- Connection Status Indicator -->
+  <div id="connection-status" class="connection-status connected">
+    <i class="fas fa-wifi"></i>
+    <span>Connected</span>
+  </div>
+  
+  <button id="theme-toggle" class="theme-toggle" title="Toggle Dark Mode">
+    <i id="theme-icon" class="fas fa-moon"></i>
+  </button>
+  
+  <div id="install-container" class="hidden">
+    <button id="install-btn" class="install-btn">📱 Install App</button>
+  </div>
+  
+  <div class="login" id="login-screen">
+    <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="login-logo" />
+    <h2>Login</h2>
+    <input type="text" id="username" placeholder="Username" class="form-control" />
+    <input type="password" id="password" placeholder="Password" class="form-control" />
+    <div class="remember-me">
+      <input type="checkbox" id="remember-me">
+      <label for="remember-me">Remember me</label>
+    </div>
+    <button onclick="login()"><i class="fas fa-sign-in-alt"></i> Login</button>
+    <p id="login-error"></p>
+    <div class="device-info" id="device-info"></div>
+  </div>
+  
+  <div class="user-screen hidden" id="user-screen">
+    <div class="welcome-message" id="welcome-message">
+      Welcome back, <span id="user-name"></span>! Ready to start your day?
+    </div>
+    <div id="location-error" class="location-error hidden"></div>
+    <div class="user-profile">
+      <div class="user-image-container">
+        <img id="user-image" class="user-image hidden">
+        <i id="default-user-icon" class="fas fa-user default-user-icon"></i>
+      </div>
+      <div class="tech-name" id="displayed-user-name"></div>
+    </div>
+    <div class="user-actions">
+      <div class="user-status">
+        <span class="status-indicator status-checked-out" id="status-indicator"></span>
+        <span id="status-text">Currently checked out</span>
+      </div>
+      <div class="action-buttons">
+        <button id="check-in-btn" onclick="checkIn()" class="pulse"><i class="fas fa-sign-in-alt"></i> Check In</button>
+        <button id="check-out-btn" class="hidden" onclick="confirmCheckOut()"><i class="fas fa-sign-out-alt"></i> Check Out</button>
+      </div>
+    </div>
+    <div id="goodbye-message" class="goodbye-message hidden">
+      Thank you for your work today! Have a great rest.
+    </div>
+    <div class="stats-container">
+      <h3>Your Work Hours</h3>
+      <p class="work-stats">Today: <span id="today-hours">0 hours</span></p>
+      <p class="work-stats">This Month: <span id="month-hours">0 hours</span></p>
+      <p class="work-stats">Today Shifts: <span id="today-shifts">0 shifts</span></p>
+      <p class="work-stats">Month Shifts: <span id="month-shifts">0 shifts</span></p>
+      <p class="timezone-info">Timezone: <span id="timezone-display"></span></p>
+    </div>
+    <button onclick="logout()" style="background: var(--danger-color); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+  </div>
+  
+  <div class="admin-screen hidden" id="admin-screen">
+    <div class="admin-panel">
+      <h2>Admin Panel</h2>
+      
+      <!-- Dashboard Section -->
+      <div class="admin-dashboard">
+        <div class="admin-dashboard-section">
+          <h3 class="admin-dashboard-title">Attendance Management</h3>
+          <div class="admin-dashboard-content">
+            <select id="month-select" class="month-selector">
+              <option value="">Select Month</option>
+              <option value="01">January</option>
+              <option value="02">February</option>
+              <option value="03">March</option>
+              <option value="04">April</option>
+              <option value="05">May</option>
+              <option value="06">June</option>
+              <option value="07">July</option>
+              <option value="08">August</option>
+              <option value="09">September</option>
+              <option value="10">October</option>
+              <option value="11">November</option>
+              <option value="12">December</option>
+            </select>
+            <div class="print-btn-container">
+              <button onclick="printSheet()"><i class="fas fa-print"></i> Print Sheet</button>
+            </div>
+            <div class="action-buttons">
+              <button onclick="viewAttendance()"><i class="fas fa-clipboard-list"></i> View Attendance</button>
+              <button onclick="viewTechnicians()"><i class="fas fa-users"></i> View Technicians</button>
+              <button onclick="addTechnician()"><i class="fas fa-user-plus"></i> Add Technician</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="admin-dashboard-section">
+          <h3 class="admin-dashboard-title">Quick Actions</h3>
+          <div class="admin-dashboard-content">
+            <button onclick="toggleContent('stats-content')" class="unified-button" style="background-color: var(--success-color);">
+              <i class="fas fa-chart-bar"></i> View Monthly Stats
+            </button>
+            <button onclick="toggleContent('manual-entry-section')" class="unified-button manual-entry-btn">
+              <i class="fas fa-edit"></i> Manual Entry
+            </button>
+            
+            <!-- Monthly Stats Content -->
+            <div id="stats-content" class="toggle-content">
+              <div id="dashboard-stats" class="dashboard-stats"></div>
+            </div>
+            
+            <!-- Manual Entry Content -->
+            <div id="manual-entry-section" class="toggle-content manual-entry">
+              <input type="text" id="manual-user-search" placeholder="Search Technician..." class="form-control" list="technicians-list">
+              <datalist id="technicians-list"></datalist>
+              
+              <div class="datetime-input">
+                <input type="date" id="manual-date" class="form-control">
+                <input type="time" id="manual-checkin-time" class="form-control">
+              </div>
+              
+              <div class="datetime-input">
+                <input type="date" id="manual-date-out" class="form-control">
+                <input type="time" id="manual-checkout-time" class="form-control">
+              </div>
+              
+              <div id="manual-shift-options" class="hidden">
+                <p>Available Shifts:</p>
+                <div id="manual-shift-options-container"></div>
+              </div>
+              <input type="hidden" id="manual-shifts" value="">
+              <button onclick="saveManualEntry()"><i class="fas fa-save"></i> Save Entry</button>
+            </div>
+          </div>
+        </div>
+        
+        <div class="admin-dashboard-section">
+          <h3 class="admin-dashboard-title">System Management</h3>
+          <div class="admin-dashboard-content">
+            <button onclick="toggleContent('backup-content')" class="unified-button backup-unified-btn">
+              <i class="fas fa-database"></i> Backup Management
+            </button>
+            <button onclick="toggleContent('device-content')" class="unified-button device-unified-btn">
+              <i class="fas fa-laptop"></i> Device Management
+            </button>
+            
+            <!-- Backup Management Content -->
+            <div id="backup-content" class="toggle-content">
+              <h4><i class="fas fa-database"></i> Backup Management</h4>
+              <p>Create, restore, or download backups of all attendance data.</p>
+              
+              <div class="backup-controls">
+                <div class="backup-control-row">
+                  <div class="backup-auto-toggle">
+                    <label class="switch">
+                      <input type="checkbox" id="auto-backup-toggle" checked>
+                      <span class="slider"></span>
+                    </label>
+                    <span>Auto Daily Backup</span>
+                  </div>
+                  <select id="backup-time" class="backup-time-selector">
+                    <option value="00:00">12:00 AM</option>
+                    <option value="01:00">1:00 AM</option>
+                    <option value="02:00">2:00 AM</option>
+                    <option value="03:00">3:00 AM</option>
+                    <option value="04:00">4:00 AM</option>
+                    <option value="05:00">5:00 AM</option>
+                    <option value="06:00">6:00 AM</option>
+                    <option value="07:00">7:00 AM</option>
+                    <option value="08:00">8:00 AM</option>
+                    <option value="09:00">9:00 AM</option>
+                    <option value="10:00">10:00 AM</option>
+                    <option value="11:00">11:00 AM</option>
+                    <option value="12:00">12:00 PM</option>
+                    <option value="13:00">1:00 PM</option>
+                    <option value="14:00">2:00 PM</option>
+                    <option value="15:00">3:00 PM</option>
+                    <option value="16:00">4:00 PM</option>
+                    <option value="17:00">5:00 PM</term-option>
+                    <option value="18:00">6:00 PM</option>
+                    <option value="19:00">7:00 PM</option>
+                    <option value="20:00">8:00 PM</option>
+                    <option value="21:00">9:00 PM</option>
+                    <option value="22:00">10:00 PM</option>
+                    <option value="23:00">11:00 PM</option>
+                  </select>
+                </div>
+                
+                <div class="backup-buttons">
+                  <button onclick="createBackupNow()" class="backup-btn"><i class="fas fa-sync"></i> Create Backup Now</button>
+                  <button onclick="downloadBackup()" class="backup-btn"><i class="fas fa-download"></i> Download Backup</button>
+                  <button onclick="restoreBackup()" class="backup-btn"><i class="fas fa-undo"></i> Restore Backup</button>
+                  <button onclick="viewBackupHistory()" class="backup-btn"><i class="fas fa-history"></i> View Backup History</button>
+                </div>
+              </div>
+              
+              <input type="file" id="backupFile" accept=".json" style="display: none;">
+              
+              <div id="backup-history" class="backup-history hidden">
+                <h4>Backup History</h4>
+                <div id="backup-list"></div>
+              </div>
+            </div>
+            
+            <!-- Device Management Content -->
+            <div id="device-content" class="toggle-content">
+              <h4><i class="fas fa-laptop"></i> Device Management</h4>
+              <div class="search-container">
+                <input type="text" id="device-search" placeholder="Search technician" class="search-input">
+                <i class="fas fa-search search-icon"></i>
+              </div>
+              <div class="device-list" id="device-list">
+                <!-- Device list will be populated here -->
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      
+      <div id="technician-list" class="hidden"></div>
+      <div id="attendance-table" class="hidden">
+        <h3 class="section-title">Attendance Records</h3>
+        <table id="table-output">
+          <thead>
+            <tr>
+              <th>User</th>
+              <th>Date</th>
+              <th>Check In</th>
+              <th>Check Out</th>
+              <th>Worked Hours</th>
+              <th>Shifts Details</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+      
+      <button onclick="logout()" style="background: var(--danger-color); margin-top: 20px;"><i class="fas fa-sign-out-alt"></i> Logout</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.1/firebase-database-compat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/toastify-js"></script>
+
+<script>
+// Firebase config
+const firebaseConfig = {
+  apiKey: "AIzaSyCbLFYoCrWbvmkV49uN6-tdh4fn-EUIgTM",
+  authDomain: "food-trip-attendance.firebaseapp.com",
+  databaseURL: "https://food-trip-attendance-default-rtdb.firebaseio.com",
+  projectId: "food-trip-attendance",
+  storageBucket: "food-trip-attendance.appspot.com",
+  messagingSenderId: "358383921474",
+  appId: "1:358383921474:web:e7d44396941ad3e51f40db"
+};
+
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
+
+// متغيرات لتثبيت التطبيق
+let deferredPrompt;
+let selectedShifts = '';
+let currentTheme = localStorage.getItem('theme') || 'light';
+let deviceFingerprint = localStorage.getItem('deviceFingerprint') || '';
+let isAdmin = false;
+let autoBackupEnabled = true;
+let backupTime = "00:00";
+let backupInterval;
+let lastCheckInDate = localStorage.getItem('lastCheckInDate') || '';
+let clickSound = new Audio('https://assets.mixkit.co/sfx/preview/mixkit-modern-click-box-check-1120.mp3');
+
+// إحداثيات المصنع
+const factoryLat = 30.275512;
+const factoryLon = 31.810124;
+const allowedDistance = 100; // 100 متر
+
+// تعريف الشفتات المعدلة وفقاً للمتطلبات الجديدة
+const SHIFT_TIMES = {
+  weekday: {
+    shift1: { start: 8 * 60, end: 16 * 60, lateEntry: 9 * 60, earlyExit: 15 * 60 },    // 08:00 - 16:00 (8 ساعات)
+    shift2: { start: 16 * 60, end: 24 * 60, lateEntry: 17 * 60, earlyExit: 23 * 60 },   // 16:00 - 24:00 (8 ساعات)
+    shift3: { start: 0, end: 8 * 60, lateEntry: 1 * 60, earlyExit: 7 * 60 }             // 00:00 - 08:00 (8 ساعات)
+  },
+  friday: {
+    shift1: { start: 8 * 60, end: 20 * 60, lateEntry: 9 * 60, earlyExit: 19 * 60 },     // 08:00 - 20:00 (12 ساعة)
+    shift2: { start: 20 * 60, end: 8 * 60, lateEntry: 21 * 60, earlyExit: 7 * 60 }      // 20:00 - 08:00 (12 ساعة) - اليوم التالي
+  }
+};
+
+// دالة محدثة لتحديد الشيفتات بناءً على وقت الدخول والخروج مع مراعاة اليوم التشغيلي الجديد
+function determineShifts(checkInTime, checkOutTime, operationalDay) {
+  const isFriday = operationalDay === 5; // 5 = Friday
+  const shifts = isFriday ? SHIFT_TIMES.friday : SHIFT_TIMES.weekday;
+  
+  const checkInMinutes = timeToMinutes(checkInTime);
+  let checkOutMinutes = timeToMinutes(checkOutTime);
+  
+  // إذا كان وقت الخروج أقل من وقت الدخول، فهذا يعني أن الخروج في اليوم التالي
+  if (checkOutMinutes < checkInMinutes) {
+    checkOutMinutes += 24 * 60; // إضافة 24 ساعة (1440 دقيقة)
+  }
+  
+  let workedShifts = [];
+  
+  // تحديد الشيفتات التي تم العمل فيها
+  for (const [shiftName, shiftTimes] of Object.entries(shifts)) {
+    let shiftStart = shiftTimes.start;
+    let shiftEnd = shiftTimes.end;
+    
+    // للشيفتات التي تعبر منتصف الليل (مثل الشيفت الثالث)
+    if (shiftEnd < shiftStart) {
+      shiftEnd += 24 * 60; // إضافة 24 ساعة
+    }
+    
+    // التحقق من تداخل أوقات العمل مع الشيفت
+    if (checkInMinutes < shiftEnd && checkOutMinutes > shiftStart) {
+      workedShifts.push(shiftName.replace('shift', ''));
+    }
+  }
+  
+  return workedShifts;
+}
+
+// دالة محدثة لحساب عدد الشيفتات بناءً على وقت الدخول والخروج وساعات العمل
+function calculateShifts(checkInTime, checkOutTime, operationalDay) {
+  // حساب المدة الكاملة للعمل
+  const workedHours = parseFloat(calculateWorkedHoursAdvanced(checkInTime, checkOutTime));
+  
+  // تحديد الشيفتات التي تم العمل فيها
+  const workedShifts = determineShifts(checkInTime, checkOutTime, operationalDay);
+  
+  if (workedShifts.length === 0) {
+    return [];
+  }
+  
+  // إنشاء خيارات الشيفتات الممكنة بناءً على ساعات العمل
+  const shiftOptions = [];
+  
+  // حساب وقت الدخول والخروج بالدقائق
+  const checkInMinutes = timeToMinutes(checkInTime);
+  const checkOutMinutes = timeToMinutes(checkOutTime);
+  
+  const isFriday = operationalDay === 5;
+  
+  if (isFriday) {
+    // يوم الجمعة
+    if (workedHours >= 22 && workedHours <= 24) {
+      // 24 ساعة = شيفتات 1-2
+      shiftOptions.push('1-2');
+    } else if (workedHours >= 10 && workedHours <= 14) {
+      // شيفت 1 فقط (8 ص - 8 م)
+      shiftOptions.push('1');
+    } else if (workedHours >= 10 && workedHours <= 14) {
+      // شيفت 2 فقط (8 م - 8 ص)
+      shiftOptions.push('2');
+    }
+  } else {
+    // أيام الأسبوع العادية
+    
+    // شيفت واحد: 6 إلى 15 ساعة
+    if (workedHours >= 6 && workedHours < 15) {
+      if (checkInMinutes >= 8*60 && checkInMinutes < 16*60) {
+        shiftOptions.push('1');
+      } else if (checkInMinutes >= 16*60 && checkInMinutes < 24*60) {
+        shiftOptions.push('2');
+      } else if (checkInMinutes >= 0 && checkInMinutes < 8*60) {
+        shiftOptions.push('3');
+      }
+    }
+    // شيفتين: 15 إلى 22 ساعة
+    else if (workedHours >= 15 && workedHours < 22) {
+      if (checkInMinutes >= 8*60 && checkInMinutes < 16*60) {
+        shiftOptions.push('1-2');
+      } else if (checkInMinutes >= 16*60) {
+        shiftOptions.push('2-3');
+      }
+    }
+    // ثلاث شيفتات: 22 إلى 24 ساعة
+    else if (workedHours >= 22 && workedHours <= 24) {
+      shiftOptions.push('1-2-3');
+    }
+  }
+  
+  return shiftOptions;
+}
+
+// دالة محدثة لحساب ساعات العمل مع مراعاة الشيفتات العابرة لمنتصف الليل
+function calculateWorkedHoursAdvanced(start, end) {
+  // تحويل الوقت إلى دقائق
+  const startMinutes = parseInt(start.split(':')[0]) * 60 + parseInt(start.split(':')[1]);
+  let endMinutes = parseInt(end.split(':')[0]) * 60 + parseInt(end.split(':')[1]);
+
+  // حساب الفرق بالدقائق مع مراعاة عبور منتصف الليل
+  let diffMinutes;
+  if (endMinutes < startMinutes) {
+    // إذا كان وقت الخروج أقل من وقت الدخول، فهذا يعني عبور منتصف الليل
+    diffMinutes = (24 * 60) - startMinutes + endMinutes;
+  } else {
+    diffMinutes = endMinutes - startMinutes;
+  }
+
+  // تحويل الدقائق إلى ساعات وكسور الساعة
+  const hours = Math.floor(diffMinutes / 60);
+  const minutes = diffMinutes % 60;
+
+  // إرجاع النتيجة بصيغة الساعات.الدقائق
+  return (hours + minutes / 60).toFixed(2);
+}
+
+// دالة محدثة لتسجيل الدخول مع التحقق من الموقع الجغرافي واليوم التشغيلي الجديد
+async function checkIn() {
+  playClickSound();
+  const username = document.getElementById("user-name").innerText;
+  
+  try {
+    // التحقق من الموقع الجغرافي أولاً
+    await checkLocation();
+    
+    // إذا نجح التحقق من الموقع، المتابعة لتسجيل الدخول
+    const localTime = await getLocalTime();
+    
+    if (!localTime.valid) {
+      showNotification("Cannot check in with incorrect device time", "error");
+      return;
+    }
+    
+    const date = localTime.date; // اليوم التشغيلي المحدث
+    const time = localTime.time;
+    
+    // التحقق مما إذا كان هناك تسجيل يدوي لهذا اليوم التشغيلي
+    const ref = database.ref(`attendance/${username}/${date}`);
+    const snapshot = await ref.once("value");
+    
+    if (snapshot.exists() && snapshot.val().manualEntry) {
+      showNotification("Attendance already registered manually for today", "info");
+      return;
+    }
+    
+    // التحقق مما إذا كان المستخدم قد سجل دخولًا مسبقًا اليوم
+    if (lastCheckInDate === date) {
+      showNotification("You have already checked in today", "error");
+      return;
+    }
+    
+    ref.update({ checkIn: time })
+      .then(() => {
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Currently checked in";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+        document.getElementById("location-error").classList.add("hidden");
+        
+        // حفظ تاريخ آخر تسجيل دخول
+        lastCheckInDate = date;
+        localStorage.setItem('lastCheckInDate', date);
+        
+        // إظهار رسالة تأكيد مع التاريخ والوقت
+        const now = new Date();
+        const checkInTime = now.toLocaleTimeString();
+        const checkInDate = now.toLocaleDateString();
+        showNotification(`Checked in successfully at ${checkInTime} on ${checkInDate}`, 'success');
+        
+        updateWorkStats(username);
+        
+        // جدولة إشعار نهاية الشيفت
+        scheduleShiftEndNotification(username, date, time);
+      })
+      .catch(error => {
+        showNotification('Failed to check in: ' + error.message, 'error');
+      });
+  } catch (error) {
+    document.getElementById("location-error").textContent = error;
+    document.getElementById("location-error").classList.remove("hidden");
+    showNotification(error, 'error');
+  }
+}
+
+// دالة محدثة لتأكيد تسجيل الخروج مع التحقق من الموقع الجغرافي واليوم التشغيلي الجديد
+async function confirmCheckOut() {
+  playClickSound();
+  const username = document.getElementById("user-name").innerText;
+  
+  try {
+    // التحقق من الموقع الجغرافي أولاً
+    await checkLocation();
+    
+    // إذا نجح التحقق من الموقع، المتابعة لتسجيل الخروج
+    const localTime = await getLocalTime();
+    
+    if (!localTime.valid) {
+      showNotification("Cannot check out with incorrect device time", 'error');
+      return;
+    }
+    
+    const date = localTime.date; // اليوم التشغيلي المحدث
+    
+    const ref = database.ref(`attendance/${username}/${date}`);
+    const snapshot = await ref.once("value");
+    
+    if (snapshot.exists() && snapshot.val().manualEntry) {
+      showNotification("Attendance already registered manually for today", 'info');
+      return;
+    }
+    
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if (data.checkIn && !data.checkOut) {
+        const checkInTime = data.checkIn;
+        const checkOutTime = localTime.time;
+        
+        // حساب الشيفتات المتاحة بناءً على وقت الدخول والخروج مع اليوم التشغيلي الجديد
+        const operationalDay = new Date(date).getDay();
+        const availableShifts = calculateShifts(checkInTime, checkOutTime, operationalDay);
+        
+        // التحقق من السماح بالتسجيل المبكر للخروج (ساعة قبل نهاية الشيفت)
+        const checkOutMinutes = timeToMinutes(checkOutTime);
+        const isFriday = operationalDay === 5;
+        let allowEarlyCheckout = false;
+        
+        if (isFriday) {
+          // يوم الجمعة
+          const shifts = SHIFT_TIMES.friday;
+          for (const shift of availableShifts) {
+            const shiftParts = shift.split('-');
+            for (const part of shiftParts) {
+              const shiftTime = shifts[`shift${part}`];
+              if (checkOutMinutes >= shiftTime.earlyExit && checkOutMinutes <= shiftTime.end) {
+                allowEarlyCheckout = true;
+                break;
+              }
+            }
+            if (allowEarlyCheckout) break;
+          }
+        } else {
+          // أيام الأسبوع العادية
+          const shifts = SHIFT_TIMES.weekday;
+          for (const shift of availableShifts) {
+            const shiftParts = shift.split('-');
+            for (const part of shiftParts) {
+              const shiftTime = shifts[`shift${part}`];
+              if (checkOutMinutes >= shiftTime.earlyExit && checkOutMinutes <= shiftTime.end) {
+                allowEarlyCheckout = true;
+                break;
+              }
+            }
+            if (allowEarlyCheckout) break;
+          }
+        }
+        
+        if (availableShifts.length === 0 && !allowEarlyCheckout) {
+          showConfirmationDialog(
+            "Invalid Work Duration",
+            `Your work duration (${checkInTime} - ${checkOutTime}) doesn't match any valid shift pattern. Your attendance will be recorded but not counted in any shift.`,
+            () => checkOut("0", checkInTime, checkOutTime),
+            () => {} // Cancel function
+          );
+        } else if (allowEarlyCheckout) {
+          // إذا كان الوقت ضمن ساعة السماح للتسجيل المبكر
+          const workedShifts = determineShifts(checkInTime, checkOutTime, operationalDay);
+          if (workedShifts.length > 0) {
+            checkOut(workedShifts.join('-'), checkInTime, checkOutTime);
+          } else {
+            checkOut("0", checkInTime, checkOutTime);
+          }
+        } else {
+          showShiftOptions(availableShifts).then(selectedShift => {
+            if (selectedShift) {
+              checkOut(selectedShift, checkInTime, checkOutTime);
+            }
+          });
+        }
+      }
+    }
+  } catch (error) {
+    document.getElementById("location-error").textContent = error;
+    document.getElementById("location-error").classList.remove("hidden");
+    showNotification(error, 'error');
+  }
+}
+
+// دالة محدثة لتسجيل الخروج مع اليوم التشغيلي الجديد
+async function checkOut(shifts, checkInTime, checkOutTime) {
+  playClickSound();
+  const username = document.getElementById("user-name").innerText;
+  const localTime = await getLocalTime();
+  const date = localTime.date; // اليوم التشغيلي المحدث
+  const time = localTime.time;
+  
+  const workedHours = calculateWorkedHoursAdvanced(checkInTime || localTime.time, checkOutTime || time);
+  const ref = database.ref(`attendance/${username}/${date}`);
+  
+  ref.update({ 
+    checkOut: time, 
+    workedHours,
+    shifts: shifts || '1' // Default to shift 1 if not provided
+  })
+  .then(() => {
+    document.getElementById("check-out-btn").classList.add("hidden");
+    document.getElementById("goodbye-message").classList.remove("hidden");
+    document.getElementById("status-text").innerText = "Work completed for today";
+    document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+    document.getElementById("location-error").classList.add("hidden");
+    
+    // إظهار رسالة تأكيد الخروج
+    showNotification('Checked out successfully. Thank you for your work today!', 'success');
+    
+    // تحديث الإحصائيات
+    updateWorkStats(username);
+    
+    // إلغاء أي إشعارات مجدولة
+    cancelScheduledNotifications();
+  })
+  .catch(error => {
+    showNotification('Failed to check out: ' + error.message, 'error');
+  });
+}
+
+// دالة لجدولة إشعار نهاية الشيفت
+function scheduleShiftEndNotification(username, date, checkInTime) {
+  const checkInMinutes = timeToMinutes(checkInTime);
+  const operationalDay = new Date(date).getDay();
+  const isFriday = operationalDay === 5;
+  const shifts = isFriday ? SHIFT_TIMES.friday : SHIFT_TIMES.weekday;
+  
+  // تحديد الشيفت الحالية
+  let currentShift = null;
+  for (const [shiftName, shiftTimes] of Object.entries(shifts)) {
+    let shiftStart = shiftTimes.start;
+    let shiftEnd = shiftTimes.end;
+    
+    if (shiftEnd < shiftStart) {
+      shiftEnd += 24 * 60;
+    }
+    
+    if (checkInMinutes >= shiftStart && checkInMinutes <= shiftEnd) {
+      currentShift = shiftTimes;
+      break;
+    }
+  }
+  
+  if (currentShift) {
+    // حساب وقت الإشعار (15 دقيقة قبل نهاية الشيفت)
+    const notificationTime = currentShift.end - 15;
+    const nowMinutes = new Date().getHours() * 60 + new Date().getMinutes();
+    let minutesUntilNotification = notificationTime - nowMinutes;
+    
+    // إذا كان وقت الإشعار في اليوم التالي
+    if (minutesUntilNotification < 0) {
+      minutesUntilNotification += 24 * 60;
+    }
+    
+    // جدولة الإشعار
+    setTimeout(() => {
+      if (Notification.permission === 'granted') {
+        new Notification('Shift Ending Soon', {
+          body: 'Your shift will end in 15 minutes. Please prepare to check out.',
+          icon: 'https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png'
+        });
+      } else {
+        showNotification('Your shift will end in 15 minutes. Please prepare to check out.', 'info');
+      }
+    }, minutesUntilNotification * 60 * 1000);
+  }
+}
+
+// دالة لإلغاء الإشعارات المجدولة
+function cancelScheduledNotifications() {
+  // يمكنك استخدام clearTimeout إذا كنت تحتفظ بمعرفات المؤقتات
+  // في هذا المثال المبسط، نحن لا نحتفظ بها، لكن في تطبيق حقيقي ستحتاج إلى ذلك
+}
+
+// دالة لتشغيل صوت النقر
+function playClickSound() {
+  if (clickSound) {
+    clickSound.currentTime = 0;
+    clickSound.play().catch(e => console.log("Could not play click sound:", e));
+  }
+}
+
+// ==================== النسخ الاحتياطي الجديد ====================
+
+// دالة لإنشاء نسخة احتياطية وحفظها في السجل
+async function createBackup() {
+  try {
+    if (isAdmin) {
+      showNotification("Creating backup...", "info");
+    }
+    
+    // جلب جميع البيانات
+    const attendanceData = await getAllAttendanceData();
+    const techniciansData = await getAllTechniciansData();
+    const devicesData = await getAllDevicesData();
+    
+    // إنشاء كائن يحتوي على جميع البيانات
+    const backupData = {
+      attendance: attendanceData,
+      technicians: techniciansData,
+      devices: devicesData,
+      timestamp: new Date().toISOString()
+    };
+    
+    // حفظ النسخة الاحتياطية في السجل
+    const backupRef = database.ref('backups').push();
+    await backupRef.set({
+      data: backupData,
+      timestamp: new Date().getTime(),
+      date: new Date().toLocaleDateString(),
+      time: new Date().toLocaleTimeString(),
+      size: JSON.stringify(backupData).length
+    });
+    
+    if (isAdmin) {
+      showNotification("Backup created successfully!", "success");
+    }
+    return backupData;
+  } catch (error) {
+    console.error("Error creating backup:", error);
+    if (isAdmin) {
+      showNotification("Failed to create backup: " + error.message, "error");
+    }
+    throw error;
+  }
+}
+
+// دالة لإنشاء نسخة احتياطية الآن
+async function createBackupNow() {
+  try {
+    await createBackup();
+    viewBackupHistory();
+  } catch (error) {
+    console.error("Error creating backup:", error);
+  }
+}
+
+// دالة لتنزيل نسخة احتياطية
+async function downloadBackup() {
+  try {
+    const backupData = await createBackup();
+    
+    // تحويل إلى JSON
+    const jsonData = JSON.stringify(backupData, null, 2);
+    
+    // إنشاء ملف للتنزيل
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AttendanceBackup_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Backup downloaded successfully', 'success');
+  } catch (error) {
+    showNotification('Failed to create backup: ' + error.message, 'error');
+  }
+}
+
+// دالة لاستعادة النسخ الاحتياطي
+function restoreBackup() {
+  document.getElementById('backupFile').click();
+}
+
+// استمع لاختيار الملف
+document.getElementById('backupFile').addEventListener('change', async function(e) {
+  const file = e.target.files[0];
+  if (!file) return;
+  
+  try {
+    const fileContent = await readFileAsText(file);
+    const backupData = JSON.parse(fileContent);
+    
+    // تأكيد الاستعادة
+    showConfirmationDialog(
+      'Confirm Backup Restore',
+      'Are you sure you want to restore this backup? All current data will be replaced.',
+      async () => {
+        // استعادة البيانات
+        await database.ref('attendance').set(backupData.attendance);
+        await database.ref('technicians').set(backupData.technicians);
+        await database.ref('deviceFingerprints').set(backupData.devices);
+        
+        showNotification('Backup restored successfully', 'success');
+      }
+    );
+  } catch (error) {
+    showNotification('Failed to restore backup: ' + error.message, 'error');
+  }
+});
+
+// دالة لعرض سجل النسخ الاحتياطية
+function viewBackupHistory() {
+  const backupHistory = document.getElementById('backup-history');
+  backupHistory.classList.toggle('hidden');
+  
+  if (backupHistory.classList.contains('hidden')) return;
+  
+  const backupList = document.getElementById('backup-list');
+  backupList.innerHTML = '<p>Loading backup history...</p>';
+  
+  const ref = database.ref('backups').orderByChild('timestamp');
+  ref.once("value", snapshot => {
+    if (!snapshot.exists() || snapshot.numChildren() === 0) {
+      backupList.innerHTML = '<p>No backups found</p>';
+      return;
+    }
+    
+    let html = '';
+    snapshot.forEach(backupSnapshot => {
+      const backup = backupSnapshot.val();
+      const date = new Date(backup.timestamp).toLocaleString();
+      const sizeKB = (backup.size / 1024).toFixed(2);
+      
+      html += `
+<div class="backup-item">
+  <div class="backup-info">
+    <div><strong>${backup.date} ${backup.time}</strong></div>
+    <div>Size: ${sizeKB} KB</div>
+  </div>
+  <div class="backup-actions">
+    <button class="backup-btn" onclick="restoreFromHistory('${backupSnapshot.key}')">Restore</button>
+    <button class="delete-btn" onclick="deleteBackup('${backupSnapshot.key}')">Delete</button>
+    <button class="backup-btn" onclick="downloadSpecificBackup('${backupSnapshot.key}')">Download</button>
+  </div>
+</div>
+`;
+    });
+    
+    backupList.innerHTML = html;
+  });
+}
+
+// دالة لتنزيل نسخة احتياطية محددة من السجل
+async function downloadSpecificBackup(backupId) {
+  try {
+    const snapshot = await database.ref(`backups/${backupId}`).once("value");
+    const backupData = snapshot.val().data;
+    
+    // تحويل إلى JSON
+    const jsonData = JSON.stringify(backupData, null, 2);
+    
+    // إنشاء ملف للتنزيل
+    const blob = new Blob([jsonData], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `AttendanceBackup_${backupId}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    showNotification('Backup downloaded successfully', 'success');
+  } catch (error) {
+    showNotification('Failed to download backup: ' + error.message, 'error');
+  }
+}
+
+// دالة لاستعادة من سجل النسخ الاحتياطية
+function restoreFromHistory(backupId) {
+  showConfirmationDialog(
+    "Confirm Restore",
+    "Are you sure you want to restore this backup? All current data will be replaced.",
+    async () => {
+      try {
+        const snapshot = await database.ref(`backups/${backupId}`).once("value");
+        const backupData = snapshot.val().data;
+        
+        await database.ref('attendance').set(backupData.attendance);
+        await database.ref('technicians').set(backupData.technicians);
+        await database.ref('deviceFingerprints').set(backupData.devices);
+        
+        showNotification('Backup restored successfully', 'success');
+      } catch (error) {
+        showNotification('Failed to restore backup: ' + error.message, 'error');
+      }
+    }
+  );
+}
+
+// دالة لحذف نسخة احتياطية من السجل
+function deleteBackup(backupId) {
+  showConfirmationDialog(
+    "Confirm Delete",
+    "Are you sure you want to delete this backup? This action cannot be undone.",
+    async () => {
+      try {
+        await database.ref(`backups/${backupId}`).remove();
+        showNotification('Backup deleted successfully', 'success');
+        viewBackupHistory();
+      } catch (error) {
+        showNotification('Failed to delete backup: ' + error.message, 'error');
+      }
+    }
+  );
+}
+
+// دالة لجدولة النسخ اليومية التلقائية
+function scheduleDailyBackups() {
+  // إيقاف أي جدولة موجودة مسبقاً
+  if (backupInterval) {
+    clearInterval(backupInterval);
+  }
+  
+  // إذا كانت النسخ التلقائي معطلة، لا تفعل شيئاً
+  if (!autoBackupEnabled) return;
+  
+  // حساب الوقت المتبقي حتى وقت النسخ المحدد
+  const now = new Date();
+  const [hours, minutes] = backupTime.split(':').map(Number);
+  const backupTimeToday = new Date(
+    now.getFullYear(),
+    now.getMonth(),
+    now.getDate(),
+    hours,
+    minutes,
+    0
+  );
+  
+  let timeUntilBackup = backupTimeToday - now;
+  
+  // إذا كان وقت النسخ اليوم قد مضى، نضيف 24 ساعة للانتقال إلى الغد
+  if (timeUntilBackup < 0) {
+    timeUntilBackup += 24 * 60 * 60 * 1000;
+  }
+  
+  // جدولة النسخة الأولى
+  setTimeout(() => {
+    createBackup().catch(error => {
+      console.error("Scheduled backup failed:", error);
+    });
+    
+    // ثم تكرار كل 24 ساعة
+    backupInterval = setInterval(() => {
+      createBackup().catch(error => {
+        console.error("Daily backup failed:", error);
+      });
+    }, 24 * 60 * 60 * 1000);
+  }, timeUntilBackup);
+  
+  if (isAdmin) {
+    showNotification(`Auto backup scheduled for ${backupTime} daily`, "info");
+  }
+}
+
+// دالة مساعدة لقراءة الملف كنص
+function readFileAsText(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = event => resolve(event.target.result);
+    reader.onerror = error => reject(error);
+    reader.readAsText(file);
+  });
+}
+
+// دالة مساعدة لجلب جميع بيانات الحضور
+async function getAllAttendanceData() {
+  const snapshot = await database.ref('attendance').once('value');
+  return snapshot.val();
+}
+
+// دالة مساعدة لجلب جميع بيانات الفنيين
+async function getAllTechniciansData() {
+  const snapshot = await database.ref('technicians').once('value');
+  return snapshot.val();
+}
+
+// دالة مساعدة لجلب جميع بيانات الأجهزة
+async function getAllDevicesData() {
+  const snapshot = await database.ref('deviceFingerprints').once('value');
+  return snapshot.val();
+}
+
+// ==================== نهاية قسم النسخ الاحتياطي ====================
+
+// دالة للتبديل بين الوضع الداكن والفاتح
+function toggleTheme() {
+  playClickSound();
+  currentTheme = currentTheme === 'light' ? 'dark' : 'light';
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  localStorage.setItem('theme', currentTheme);
+  
+  // تحديث الأيقونة
+  const themeIcon = document.getElementById('theme-icon');
+  themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  
+  showNotification(`Switched to ${currentTheme} mode`);
+}
+
+// دالة لإنشاء بصمة الجهاز
+function generateDeviceFingerprint() {
+  // إذا كان هناك بصمة محفوظة بالفعل، استخدمها
+  if (deviceFingerprint) {
+    return deviceFingerprint;
+  }
+  
+  const userAgent = navigator.userAgent;
+  const language = navigator.language;
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+  const screenResolution = `${window.screen.width}x${window.screen.height}`;
+  const platform = navigator.platform;
+  const hardwareConcurrency = navigator.hardwareConcurrency || 'unknown';
+  
+  // إنشاء بصمة فريدة بناءً على خصائص الجهاز
+  const fingerprint = `${userAgent}-${language}-${timezone}-${screenResolution}-${platform}-${hardwareConcurrency}`;
+  
+  // تخزين البصمة في localStorage لاستخدامها بعد إعادة التحميل
+  deviceFingerprint = btoa(fingerprint);
+  localStorage.setItem('deviceFingerprint', deviceFingerprint);
+  
+  return deviceFingerprint;
+}
+
+// دالة للتحقق من بصمة الجهاز
+function checkDeviceFingerprint(username) {
+  return new Promise((resolve, reject) => {
+    if (isAdmin) {
+      resolve(true); // لا يوجد تحقق للأدمن
+      return;
+    }
+    
+    const ref = database.ref(`deviceFingerprints/${username}`);
+    ref.once("value", snapshot => {
+      if (!snapshot.exists()) {
+        // أول مرة تسجيل دخول، حفظ بصمة الجهاز
+        ref.set(deviceFingerprint)
+          .then(() => resolve(true))
+          .catch(error => reject(error));
+      } else {
+        // التحقق من تطابق البصمة
+        if (snapshot.val() === deviceFingerprint) {
+          resolve(true);
+        } else {
+          // التحقق من وجود إذن مؤقت
+          const tempAccessRef = database.ref(`temporaryAccess/${username}`);
+          tempAccessRef.once("value", tempSnapshot => {
+            if (tempSnapshot.exists() && tempSnapshot.val().allowed) {
+              // مسح الإذن المؤقت بعد استخدامه
+              tempAccessRef.remove();
+              resolve(true);
+            } else {
+              reject("Device mismatch. Please use your registered device or contact admin.");
+            }
+          });
+        }
+      }
+    });
+  });
+}
+
+// دالة لإظهار نافذة تأكيد
+function showConfirmationDialog(title, message, onConfirm, onCancel = null) {
+  playClickSound();
+  const dialog = document.createElement('div');
+  dialog.className = 'confirmation-dialog';
+  dialog.innerHTML = `
+    <div class="dialog-content">
+      <div class="dialog-title">${title}</div>
+      <div class="dialog-message">${message}</div>
+      <div class="dialog-buttons">
+        <button class="dialog-button dialog-button-primary" id="confirm-btn">Confirm</button>
+        <button class="dialog-button dialog-button-secondary" id="cancel-btn">Cancel</button>
+      </div>
+    </div>
+  `;
+  
+  document.body.appendChild(dialog);
+  
+  document.getElementById('confirm-btn').addEventListener('click', () => {
+    playClickSound();
+    document.body.removeChild(dialog);
+    onConfirm();
+  });
+  
+  document.getElementById('cancel-btn').addEventListener('click', () => {
+    playClickSound();
+    document.body.removeChild(dialog);
+    if (onCancel) onCancel();
+  });
+}
+
+// دالة لحساب المسافة بين إحداثيين باستخدام Haversine formula
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371e3; // نصف قطر الأرض بالأمتار
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+  const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+            Math.cos(φ1) * Math.cos(φ2) *
+            Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+  return R * c; // المسافة بالأمتار
+}
+
+// دالة للتحقق من الموقع الجغرافي
+function checkLocation() {
+  return new Promise((resolve, reject) => {
+    if (isAdmin) {
+      resolve(true); // الأدمن معفي من شرط الموقع
+      return;
+    }
+    
+    if (!navigator.geolocation) {
+      reject("Geolocation is not supported by your browser");
+      return;
+    }
+    
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLon = position.coords.longitude;
+        const distance = calculateDistance(userLat, userLon, factoryLat, factoryLon);
+        
+        if (distance <= allowedDistance) {
+          resolve(true);
+        } else {
+          reject(`You must be within ${allowedDistance}m of the factory to register attendance. Current distance: ${Math.round(distance)}m`);
+        }
+      },
+      (error) => {
+        reject("Unable to retrieve your location: " + error.message);
+      },
+      { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+    );
+  });
+}
+
+// دالة لتحويل الوقت إلى دقائق منذ منتصف الليل
+function timeToMinutes(timeStr) {
+  const [hours, minutes] = timeStr.split(':').map(Number);
+  return hours * 60 + minutes;
+}
+
+// دالة لعرض خيارات الشيفتات
+function showShiftOptions(availableShifts, isManual = false) {
+  return new Promise((resolve) => {
+    const dialog = document.createElement('div');
+    dialog.className = 'confirmation-dialog';
+    
+    let shiftsHtml = '';
+    if (availableShifts.length === 0) {
+      shiftsHtml = '<p>No valid shifts detected for your work duration. Please contact admin.</p>';
+    } else {
+      shiftsHtml = `
+        <div class="shift-summary">
+          <div class="shift-summary-title">Available Shifts:</div>
+          ${availableShifts.map(shift => {
+            // Format shift options for display
+            const shiftText = shift.split('-').map(s => `Shift ${s}`).join(' + ');
+            return `<div class="shift-option" onclick="selectShiftOption(this, '${shift}')">${shiftText}</div>`;
+          }).join('')}
+        </div>
+      `;
+    }
+    
+    dialog.innerHTML = `
+      <div class="dialog-content">
+        <div class="dialog-title">Select Shifts</div>
+        <div class="dialog-message">
+          ${shiftsHtml}
+          <input type="hidden" id="selected-shift" value="">
+        </div>
+        <div class="dialog-buttons">
+          <button class="dialog-button dialog-button-primary" id="confirm-shift-btn" ${availableShifts.length === 0 ? 'disabled' : ''}>Confirm</button>
+          <button class="dialog-button dialog-button-secondary" id="cancel-shift-btn">Cancel</button>
+        </div>
+      </div>
+    `;
+    
+    document.body.appendChild(dialog);
+    
+    window.selectShiftOption = function(element, shift) {
+      playClickSound();
+      document.querySelectorAll('.shift-option').forEach(opt => {
+        opt.classList.remove('selected');
+      });
+      element.classList.add('selected');
+      document.getElementById('selected-shift').value = shift;
+      document.getElementById('confirm-shift-btn').disabled = false;
+    };
+    
+    document.getElementById('confirm-shift-btn').addEventListener('click', () => {
+      playClickSound();
+      const selectedShift = document.getElementById('selected-shift').value;
+      document.body.removeChild(dialog);
+      resolve(selectedShift);
+    });
+    
+    document.getElementById('cancel-shift-btn').addEventListener('click', () => {
+      playClickSound();
+      document.body.removeChild(dialog);
+      resolve(null);
+    });
+  });
+}
+
+// دالة محدثة لحفظ التسجيل اليدوي مع مراعاة اليوم التشغيلي الجديد
+function saveManualEntry() {
+  playClickSound();
+  const user = document.getElementById("manual-user-search").value.trim();
+  const checkInDate = document.getElementById("manual-date").value;
+  const checkInTime = document.getElementById("manual-checkin-time").value;
+  const checkOutDate = document.getElementById("manual-date-out").value;
+  const checkOutTime = document.getElementById("manual-checkout-time").value;
+
+  if (!user || !checkInDate || !checkInTime || !checkOutDate || !checkOutTime) {
+    showNotification("Please fill all fields", 'error');
+    return;
+  }
+
+  // التحقق من أن تاريخ الخروج هو نفس يوم الدخول أو اليوم التالي فقط
+  const inDate = new Date(checkInDate);
+  const outDate = new Date(checkOutDate);
+  const diffDays = Math.floor((outDate - inDate) / (1000 * 60 * 60 * 24));
+  
+  if (diffDays < 0 || diffDays > 1) {
+    showNotification("Check-out date must be the same day as check-in or the next day only", 'error');
+    return;
+  }
+
+  // التحقق من أن الفني موجود في قاعدة البيانات
+  const techRef = database.ref(`technicians/${user}`);
+  techRef.once("value", snapshot => {
+    if (!snapshot.exists()) {
+      showNotification("Technician not found in database", 'error');
+      return;
+    }
+
+    // تحديد اليوم التشغيلي بناءً على وقت الدخول
+    const checkInHour = parseInt(checkInTime.split(':')[0]);
+    let operationalDate = checkInDate;
+    
+    // إذا كان وقت الدخول قبل 8:00 صباحاً، فهو ينتمي لليوم التشغيلي السابق
+    if (checkInHour < 8) {
+      const prevDay = new Date(checkInDate);
+      prevDay.setDate(prevDay.getDate() - 1);
+      operationalDate = prevDay.toISOString().split('T')[0];
+    }
+    
+    const operationalDay = new Date(operationalDate).getDay();
+    const availableShifts = calculateShifts(checkInTime, checkOutTime, operationalDay);
+    
+    if (availableShifts.length === 0) {
+      showConfirmationDialog(
+        "Invalid Work Duration",
+        `Your work duration (${checkInTime} - ${checkOutTime}) doesn't match any valid shift pattern. Your attendance will be recorded but not counted in any shift.`,
+        () => {
+          const workedHours = calculateWorkedHoursAdvanced(checkInTime, checkOutTime);
+          const ref = database.ref(`attendance/${user}/${operationalDate}`);
+          
+          ref.update({
+            checkIn: checkInTime,
+            checkOut: checkOutTime,
+            workedHours,
+            shifts: '0',
+            manualEntry: true
+          }).then(() => {
+            showNotification("Entry saved successfully!", 'success');
+            document.getElementById("manual-user-search").value = "";
+            document.getElementById("manual-date").value = "";
+            document.getElementById("manual-checkin-time").value = "";
+            document.getElementById("manual-date-out").value = "";
+            document.getElementById("manual-checkout-time").value = "";
+            document.getElementById("manual-shifts").value = "";
+          }).catch(error => {
+            showNotification("Error saving entry: " + error.message, 'error');
+          });
+        },
+        () => {} // Cancel function
+      );
+      return;
+    }
+
+    // عرض خيارات الشيفتات للأدمن
+    showShiftOptions(availableShifts, true).then(selectedShift => {
+      if (!selectedShift) return; // User cancelled
+      
+      const workedHours = calculateWorkedHoursAdvanced(checkInTime, checkOutTime);
+      const ref = database.ref(`attendance/${user}/${operationalDate}`);
+      
+      ref.update({
+        checkIn: checkInTime,
+        checkOut: checkOutTime,
+        workedHours,
+        shifts: selectedShift,
+        manualEntry: true
+      }).then(() => {
+        showNotification("Entry saved successfully!", 'success');
+        document.getElementById("manual-user-search").value = "";
+        document.getElementById("manual-date").value = "";
+        document.getElementById("manual-checkin-time").value = "";
+        document.getElementById("manual-date-out").value = "";
+        document.getElementById("manual-checkout-time").value = "";
+        document.getElementById("manual-shifts").value = "";
+      }).catch(error => {
+        showNotification("Error saving entry: " + error.message, 'error');
+      });
+    });
+  });
+}
+
+// دالة محدثة لتحديث إحصائيات العمل مع اليوم التشغيلي الجديد
+async function updateWorkStats(username) {
+  const localTime = await getLocalTime();
+  const today = localTime.date; // اليوم التشغيلي المحدث
+  const currentMonth = new Date().getMonth() + 1;
+
+  // ساعات العمل اليوم
+  const todayRef = database.ref(`attendance/${username}/${today}`);
+  todayRef.once("value", snapshot => {
+    if (snapshot.exists() && snapshot.val().workedHours) {
+      document.getElementById("today-hours").innerText = snapshot.val().workedHours + " hours";
+      if (snapshot.val().shifts) {
+        const shifts = snapshot.val().shifts;
+        let shiftCount = 0;
+        if (shifts.includes('-')) {
+          shiftCount = shifts.split('-').length;
+        } else if (shifts !== '0') {
+          shiftCount = 1;
+        }
+        document.getElementById("today-shifts").innerText = shiftCount;
+      }
+    } else {
+      document.getElementById("today-hours").innerText = "0 hours";
+      document.getElementById("today-shifts").innerText = "0";
+    }
+  });
+
+  // ساعات العمل الشهرية
+  const monthRef = database.ref(`attendance/${username}`);
+  monthRef.once("value", snapshot => {
+    let totalHours = 0;
+    let totalShifts = 0;
+    snapshot.forEach(monthSnapshot => {
+      const dateParts = monthSnapshot.key.split('-');
+      const month = parseInt(dateParts[1]);
+      if (month === currentMonth && monthSnapshot.val().workedHours) {
+        totalHours += parseFloat(monthSnapshot.val().workedHours);
+        if (monthSnapshot.val().shifts) {
+          const shifts = monthSnapshot.val().shifts;
+          if (shifts.includes('-')) {
+            totalShifts += shifts.split('-').length;
+          } else if (shifts !== '0') {
+            totalShifts += 1;
+          }
+        }
+      }
+    });
+    document.getElementById("month-hours").innerText = totalHours.toFixed(2) + " hours";
+    document.getElementById("month-shifts").innerText = totalShifts;
+  });
+}
+
+// دالة محدثة للتحقق من حالة اليوم مع اليوم التشغيلي الجديد
+async function checkTodayStatus(username) {
+  const localTime = await getLocalTime();
+  const today = localTime.date; // اليوم التشغيلي المحدث
+  
+  const ref = database.ref(`attendance/${username}/${today}`);
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      const data = snapshot.val();
+      if (data.manualEntry) {
+        // إذا كان هناك تسجيل يدوي، إخفاء أزرار الدخول/الخروج
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("status-text").innerText = "Attendance registered manually";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+      } else if (data.checkIn && !data.checkOut) {
+        document.getElementById("check-in-btn").classList.add("hidden");
+        document.getElementById("check-out-btn").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Currently checked in";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-in";
+      } else if (data.checkIn && data.checkOut) {
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("goodbye-message").classList.remove("hidden");
+        document.getElementById("status-text").innerText = "Work completed for today";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+      } else {
+        document.getElementById("check-in-btn").classList.remove("hidden");
+        document.getElementById("check-out-btn").classList.add("hidden");
+        document.getElementById("status-text").innerText = "Currently checked out";
+        document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+      }
+    } else {
+      document.getElementById("check-in-btn").classList.remove("hidden");
+      document.getElementById("check-out-btn").classList.add("hidden");
+      document.getElementById("status-text").innerText = "Currently checked out";
+      document.getElementById("status-indicator").className = "status-indicator status-checked-out";
+    }
+
+    updateWorkStats(username);
+  });
+}
+
+function populateTechniciansDropdown() {
+  const datalist = document.getElementById('technicians-list');
+  datalist.innerHTML = '';
+  
+  const ref = database.ref('technicians');
+  ref.once("value", snapshot => {
+    snapshot.forEach(techSnapshot => {
+      if (techSnapshot.key !== "test1") { // Exclude test user
+        const option = document.createElement('option');
+        option.value = techSnapshot.key;
+        datalist.appendChild(option);
+      }
+    });
+  });
+}
+
+function printSheet() {
+  playClickSound();
+  const month = document.getElementById("month-select").value;
+  if (!month) {
+    showNotification("Please select a month first", 'error');
+    return;
+  }
+
+  const year = new Date().getFullYear();
+  const monthNames = ["January", "February", "March", "April", "May", "June",
+    "July", "August", "September", "October", "November", "December"];
+  const monthName = monthNames[parseInt(month) - 1];
+  const timezone = Intl.DateTimeFormat().resolvedOptions().timeZone;
+
+  // Get all technicians
+  const techRef = database.ref("technicians");
+  techRef.once("value", techSnapshot => {
+    // Get all attendance records
+    const attendanceRef = database.ref("attendance");
+    attendanceRef.once("value", attendanceSnapshot => {
+      let printContent = `
+<html>
+<head>
+<title>Attendance Report - ${monthName} ${year}</title>
+<style>
+@media print {
+  body {
+    font-family: Arial, sans-serif;
+    margin: 0;
+    padding: 0;
+  }
+  .print-page {
+    page-break-after: always;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+    font-size: 12px;
+  }
+  .print-page:last-child {
+    page-break-after: auto;
+  }
+  .print-header {
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .print-logo {
+    height: 50px;
+    margin-bottom: 5px;
+  }
+  .print-title {
+    font-size: 16px;
+    margin-bottom: 5px;
+    color: #234f1e;
+  }
+  .print-tech-info {
+    margin-bottom: 10px;
+    text-align: center;
+  }
+  .print-tech-image-container {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    margin: 0 auto 10px;
+    border: 2px solid #234f1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    background-color: #f5f5f5;
+  }
+  .print-tech-image {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+  .print-tech-name {
+    font-weight: bold;
+    font-size: 14px;
+  }
+  .print-month-title {
+    text-align: center;
+    font-size: 14px;
+    margin-bottom: 8px;
+    padding: 3px;
+    background-color: #f5f5f5;
+  }
+  .print-table {
+    width: 100%;
+    font-size: 10px;
+    border-collapse: collapse;
+  }
+  .print-table th, .print-table td {
+    padding: 4px;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  .print-table th {
+    background-color: #f2f2f2;
+  }
+  .print-summary {
+    margin-top: 10px;
+    padding: 8px;
+    background-color: #f9f9f9;
+    border-radius: 3px;
+    font-size: 11px;
+  }
+  .print-summary-item {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 3px;
+  }
+  .print-summary-label {
+    font-weight: bold;
+  }
+  .print-summary-value {
+    color: #234f1e;
+  }
+  .print-footer {
+    text-align: center;
+    margin-top: 15px;
+    font-size: 9px;
+    color: #666;
+  }
+  .print-notes {
+    font-size: 9px;
+    margin-top: 3px;
+    color: #666;
+  }
+  .print-absent {
+    color: #f44336;
+  }
+  .print-manual {
+    color: #4CAF50;
+  }
+  .signature-line {
+    margin-top: 30px;
+    border-top: 1px solid #000;
+    width: 150px;
+    display: inline-block;
+    text-align: center;
+    padding-top: 3px;
+    font-size: 10px;
+  }
+  /* إزالة الصفحة الزائدة التي تحتوي على معلومات التايم زون فقط */
+  .print-page:has(.print-footer:only-child) {
+    display: none;
+  }
+  /* Styles for statistics page */
+  .print-stats-page {
+    page-break-after: always;
+    padding: 15px;
+    font-family: Arial, sans-serif;
+  }
+  .print-stats-title {
+    text-align: center;
+    font-size: 18px;
+    margin-bottom: 15px;
+    color: #234f1e;
+    font-weight: bold;
+  }
+  .print-stats-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+  }
+  .print-stats-table th, .print-stats-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: center;
+  }
+  .print-stats-table th {
+    background-color: #f2f2f2;
+  }
+  .print-notes-section {
+    margin-top: 30px;
+    border: 1px solid #ddd;
+    min-height: 150px;
+    padding: 10px;
+  }
+  .print-signature-section {
+    margin-top: 50px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .print-signature-box {
+    width: 45%;
+    text-align: center;
+  }
+  .print-signature-line {
+    border-top: 1px solid #000;
+    width: 200px;
+    display: inline-block;
+    margin-top: 50px;
+    padding-top: 5px;
+  }
+}
+</style>
+</head>
+<body>
+`;
+
+      // For each technician, create a page
+      techSnapshot.forEach(techData => {
+        const techId = techData.key;
+        if (techId === "test1") return; // Skip test technician
+        const techInfo = techData.val();
+        const daysInMonth = new Date(year, parseInt(month), 0).getDate();
+        let totalHours = 0;
+        let daysWorked = 0;
+        let totalShifts = 0;
+        let daysAbsent = 0;
+
+        // Start technician page (Page 1 - Attendance Table)
+        printContent += `
+  <div class="print-page">
+    <div class="print-header">
+      <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="print-logo" />
+      <h2 class="print-title">Attendance Report</h2>
+      <div class="print-tech-info">
+        <div class="print-tech-image-container">
+          ${techInfo.image ? 
+            `<img src="${techInfo.image}" class="print-tech-image" alt="${techId}" onerror="this.onerror=null;this.parentNode.innerHTML='<i class=\\'fas fa-user\\' style=\\'font-size:30px;color:#ccc;\\'></i>'">` : 
+            '<i class="fas fa-user" style="font-size:30px;color:#ccc;"></i>'}
+        </div>
+        <div class="print-tech-name">${techId}</div>
+      </div>
+      <div class="print-month-title">${monthName} ${year}</div>
+    </div>
+    <table class="print-table">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Day</th>
+          <th>Check In</th>
+          <th>Check Out</th>
+          <th>Hours</th>
+          <th>Shifts</th>
+          <th>Notes</th>
+        </tr>
+      </thead>
+      <tbody>
+`;
+
+        // Add rows for each day of the month
+        for (let day = 1; day <= daysInMonth; day++) {
+          const dateStr = `${year}-${month}-${day.toString().padStart(2, '0')}`;
+          const dateObj = new Date(dateStr);
+          const dayName = dateObj.toLocaleDateString('en-US', { weekday: 'short' });
+          const isFriday = dayName === 'Fri';
+
+          // Get attendance data for this day
+          const attendanceData = attendanceSnapshot.child(`${techId}/${dateStr}`).val();
+          let checkIn = '-';
+          let checkOut = '-';
+          let workedHours = '-';
+          let shifts = '-';
+          let shiftsDetails = '-';
+          let notes = '';
+
+          if (attendanceData) {
+            checkIn = attendanceData.checkIn || '-';
+            checkOut = attendanceData.checkOut || '-';
+            workedHours = attendanceData.workedHours || '-';
+            shifts = attendanceData.shifts || '-';
+            
+            // Format shifts details
+            if (shifts !== '-') {
+              if (shifts.includes('-')) {
+                const shiftParts = shifts.split('-');
+                shiftsDetails = shiftParts.map(s => `S${s}`).join('+');
+              } else if (shifts !== '0') {
+                shiftsDetails = `S${shifts}`;
+              } else {
+                shiftsDetails = '-';
+              }
+            }
+
+            if (attendanceData.workedHours) {
+              totalHours += parseFloat(attendanceData.workedHours);
+              daysWorked++;
+              if (attendanceData.shifts) {
+                if (attendanceData.shifts.includes('-')) {
+                  totalShifts += attendanceData.shifts.split('-').length;
+                } else if (attendanceData.shifts !== '0') {
+                  totalShifts += 1;
+                }
+              }
+              
+              // Check for manual entry
+              if (attendanceData.manualEntry) {
+                notes += '<span class="print-manual">M</span>';
+              }
+            }
+          } else {
+            // No attendance data - absent
+            notes = '<span class="print-absent">A</span>';
+            daysAbsent++;
+          }
+
+          printContent += `
+        <tr>
+          <td>${dateStr}</td>
+          <td>${dayName}</td>
+          <td>${checkIn}</td>
+          <td>${checkOut}</td>
+          <td>${workedHours}</td>
+          <td>${shiftsDetails}</td>
+          <td>${notes}</td>
+        </tr>
+`;
+        }
+
+        // Close table
+        printContent += `
+      </tbody>
+    </table>
+    <div class="print-footer">
+      Report generated on ${new Date().toLocaleDateString()} at ${new Date().toLocaleTimeString()}
+    </div>
+  </div>
+`;
+
+        // Page 2 - Statistics and Signatures
+        printContent += `
+  <div class="print-stats-page">
+    <div class="print-header">
+      <img src="https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png" class="print-logo" />
+      <h2 class="print-stats-title">Monthly Performance Statistics</h2>
+      <div class="print-tech-info">
+        <div class="print-tech-name">${techId}</div>
+      </div>
+      <div class="print-month-title">${monthName} ${year}</div>
+    </div>
+    
+    <table class="print-stats-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th>Value</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Total Worked Days</td>
+          <td>${daysWorked}</td>
+        </tr>
+        <tr>
+          <td>Total Absent Days</td>
+          <td>${daysAbsent}</td>
+        </tr>
+        <tr>
+          <td>Total Hours Worked</td>
+          <td>${totalHours.toFixed(2)}</td>
+        </tr>
+        <tr>
+          <td>Total Shifts Completed</td>
+          <td>${totalShifts}</td>
+        </tr>
+        <tr>
+          <td>Average Hours Per Day</td>
+          <td>${daysWorked > 0 ? (totalHours / daysWorked).toFixed(2) : '0.00'}</td>
+        </tr>
+      </tbody>
+    </table>
+    
+    <div class="print-notes-section">
+      <p><strong>Notes:</strong></p>
+      <br><br><br><br><br><br><br><br>
+    </div>
+    
+    <div class="print-signature-section">
+      <div class="print-signature-box">
+        <div class="print-signature-line">Engineer's Signature</div>
+      </div>
+      <div class="print-signature-box">
+        <div class="print-signature-line">HR Manager's Signature</div>
+      </div>
+    </div>
+    
+    <div class="print-footer">
+      Designed by Ahmed Said Shahin | Report generated on ${new Date().toLocaleDateString()}
+    </div>
+  </div>
+`;
+      });
+
+      const printWindow = window.open('', '_blank');
+      printWindow.document.write(printContent);
+      printWindow.document.close();
+      printWindow.focus();
+      setTimeout(() => {
+        printWindow.print();
+        printWindow.close();
+      }, 500);
+      showNotification('Print sheet generated successfully', 'success');
+    });
+  });
+}
+
+function addTechnician() {
+  playClickSound();
+  const username = prompt("Enter technician username:");
+  if (!username) return;
+  
+  // Check if technician already exists
+  const ref = database.ref(`technicians/${username}`);
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      showNotification(`Technician '${username}' already exists. Please choose a different name.`, 'error');
+      return;
+    }
+    
+    const password = prompt("Enter technician password:");
+    if (!password) return;
+    const imageUrl = prompt("(Optional) Enter technician image URL:");
+    
+    ref.set({ password, image: imageUrl || "" })
+      .then(() => {
+        showNotification("Technician added successfully!", 'success');
+        viewTechnicians();
+        populateTechniciansDropdown();
+      })
+      .catch(error => {
+        showNotification("Error adding technician: " + error.message, 'error');
+      });
+  });
+}
+
+function viewTechnicians() {
+  playClickSound();
+  const ref = database.ref("technicians");
+  ref.once("value", snapshot => {
+    let html = "<h3 class='section-title'>Technicians List</h3><div class='tech-list'>";
+    snapshot.forEach(techSnapshot => {
+      if (techSnapshot.key !== "test1") { // Exclude test user
+        const techData = techSnapshot.val();
+        html += `
+<div class="tech-card">
+  ${techData.image ? `<img src="${techData.image}" class="tech-image" alt="${techSnapshot.key}">` : ''}
+  <div class="tech-name">${techSnapshot.key}</div>
+  <div class="tech-action">
+    <button class="delete-btn" onclick="deleteTechnician('${techSnapshot.key}')">Delete</button>
+  </div>
+</div>
+`;
+      }
+    });
+    html += "</div>";
+    document.getElementById("technician-list").innerHTML = html;
+    document.getElementById("technician-list").classList.remove("hidden");
+    document.getElementById("attendance-table").classList.add("hidden");
+  });
+}
+
+function deleteTechnician(username) {
+  playClickSound();
+  if (!confirm(`Are you sure you want to delete technician "${username}"?`)) return;
+  
+  // Delete technician from technicians node
+  const techRef = database.ref(`technicians/${username}`);
+  techRef.remove()
+    .then(() => {
+      // Also delete the device fingerprint if exists
+      const deviceRef = database.ref(`deviceFingerprints/${username}`);
+      deviceRef.remove()
+        .then(() => {
+          showNotification("Technician deleted successfully and device removed!", 'success');
+          viewTechnicians();
+          populateTechniciansDropdown();
+        })
+        .catch(error => {
+          showNotification("Technician deleted but device removal failed: " + error.message, 'error');
+        });
+    })
+    .catch(error => {
+      showNotification("Error deleting technician: " + error.message, 'error');
+    });
+}
+
+function viewAttendance() {
+  playClickSound();
+  const month = document.getElementById("month-select").value;
+  if (!month) {
+    showNotification("Please select a month first", 'error');
+    return;
+  }
+
+  const ref = database.ref("attendance");
+  ref.once("value", snapshot => {
+    const tbody = document.querySelector("#table-output tbody");
+    tbody.innerHTML = "";
+    
+    // جمع جميع السجلات في مصفوفة للترتيب
+    const records = [];
+    
+    snapshot.forEach(userSnapshot => {
+      const user = userSnapshot.key;
+      userSnapshot.forEach(dateSnapshot => {
+        const date = dateSnapshot.key;
+        const dateParts = date.split('-');
+        const recordMonth = dateParts[1];
+        if (recordMonth === month) {
+          const data = dateSnapshot.val();
+          
+          // Format shifts details
+          let shiftsDetails = '-';
+          if (data.shifts) {
+            if (data.shifts.includes('-')) {
+              const shiftParts = data.shifts.split('-');
+              shiftsDetails = shiftParts.map(s => `Shift ${s}`).join(' + ');
+            } else if (data.shifts !== '0') {
+              shiftsDetails = `Shift ${data.shifts}`;
+            } else {
+              shiftsDetails = 'No valid shift';
+            }
+          }
+          
+          records.push({
+            user,
+            date,
+            checkIn: data.checkIn || '-',
+            checkOut: data.checkOut || '-',
+            workedHours: data.workedHours || '0.00',
+            shiftsDetails: shiftsDetails
+          });
+        }
+      });
+    });
+    
+    // ترتيب السجلات من الأحدث إلى الأقدم
+    records.sort((a, b) => new Date(b.date) - new Date(a.date));
+    
+    // عرض السجلات المرتبة
+    records.forEach(record => {
+      const row = document.createElement("tr");
+      row.innerHTML = `
+<td>${record.user}</td>
+<td>${record.date}</td>
+<td>${record.checkIn}</td>
+<td>${record.checkOut}</td>
+<td>${record.workedHours}</td>
+<td>${record.shiftsDetails}</td>
+<td>
+  <button class="delete-btn" onclick="deleteEntry('${record.user}','${record.date}')">Delete</button>
+</td>
+`;
+      tbody.appendChild(row);
+    });
+    
+    document.getElementById("attendance-table").classList.remove("hidden");
+    document.getElementById("technician-list").classList.add("hidden");
+  });
+}
+
+function viewDeviceManagement() {
+  playClickSound();
+  const deviceRef = database.ref("deviceFingerprints");
+  const techRef = database.ref("technicians");
+  
+  // جلب كل من أجهزة الفنيين وقائمة الفنيين
+  Promise.all([deviceRef.once("value"), techRef.once("value")])
+    .then(([deviceSnapshot, techSnapshot]) => {
+      let html = "<h3>Device Assignments</h3><div class='device-list'>";
+      
+      if (!deviceSnapshot.exists() || deviceSnapshot.numChildren() === 0) {
+        html += "<p>No device assignments found</p>";
+      } else {
+        // إنشاء مجموعة من الفنيين الحاليين للتحقق منها
+        const currentTechnicians = new Set();
+        techSnapshot.forEach(tech => {
+          if (tech.key !== "test1") { // استبعاد المستخدم التجريبي
+            currentTechnicians.add(tech.key);
+          }
+        });
+        
+        // عرض فقط الأجهزة التي تنتمي إلى فنيين حالين
+        deviceSnapshot.forEach(deviceSnapshot => {
+          const username = deviceSnapshot.key;
+          
+          // التحقق مما إذا كان الفني لا يزال موجودًا في قاعدة البيانات
+          if (currentTechnicians.has(username)) {
+            html += `
+<div class="device-item">
+  <span>${username}</span>
+  <div class="device-actions">
+    <button class="temporary-access-btn" onclick="grantTemporaryAccess('${username}')">Allow Once</button>
+    <button class="delete-btn" onclick="resetDevice('${username}')">Reset</button>
+  </div>
+</div>
+`;
+          }
+        });
+      }
+      
+      html += "</div>";
+      document.getElementById("device-list").innerHTML = html;
+      
+      // إضافة وظيفة البحث
+      const searchInput = document.getElementById('device-search');
+      searchInput.addEventListener('input', function() {
+        const searchTerm = this.value.toLowerCase();
+        const deviceItems = document.querySelectorAll('.device-item');
+        
+        deviceItems.forEach(item => {
+          const username = item.querySelector('span').textContent.toLowerCase();
+          if (username.includes(searchTerm)) {
+            item.style.display = 'flex';
+          } else {
+            item.style.display = 'none';
+          }
+        });
+      });
+    })
+    .catch(error => {
+      console.error("Error loading device management:", error);
+      showNotification("Failed to load device management: " + error.message, "error");
+    });
+}
+
+function grantTemporaryAccess(username) {
+  playClickSound();
+  if (!confirm(`Grant temporary access to ${username} from another device?`)) return;
+  
+  const ref = database.ref(`temporaryAccess/${username}`);
+  ref.set({
+    allowed: true,
+    timestamp: new Date().getTime()
+  }).then(() => {
+    showNotification("Temporary access granted for next login only", 'success');
+    viewDeviceManagement();
+  }).catch(error => {
+    showNotification("Error granting temporary access: " + error.message, 'error');
+  });
+}
+
+function resetDevice(username) {
+  playClickSound();
+  if (!confirm(`Are you sure you want to reset device for ${username}? They will need to register their device on next login.`)) return;
+  
+  const ref = database.ref(`deviceFingerprints/${username}`);
+  ref.remove()
+    .then(() => {
+      showNotification("Device reset successfully. User will need to register device on next login.", 'success');
+      viewDeviceManagement();
+    })
+    .catch(error => {
+      showNotification("Error resetting device: " + error.message, 'error');
+    });
+}
+
+function deleteEntry(user, date) {
+  playClickSound();
+  if (!confirm(`Are you sure you want to delete this entry?\nUser: ${user}\nDate: ${date}`)) return;
+  
+  const ref = database.ref(`attendance/${user}/${date}`);
+  ref.remove()
+    .then(() => {
+      showNotification("Entry deleted successfully!", 'success');
+      viewAttendance();
+    })
+    .catch(error => {
+      showNotification("Error deleting entry: " + error.message, 'error');
+    });
+}
+
+function selectShift(element, shift) {
+  playClickSound();
+  document.querySelectorAll('.shift-option').forEach(opt => {
+    opt.classList.remove('selected');
+  });
+  element.classList.add('selected');
+  selectedShifts = shift;
+  document.getElementById('manual-shifts').value = shift;
+}
+
+function addTestTechnician() {
+  const ref = database.ref("technicians/test1");
+  ref.once("value", snapshot => {
+    if (!snapshot.exists()) {
+      ref.set({ password: "1234", image: "" });
+    }
+  });
+}
+
+function setupServiceWorker() {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker
+      .register('service-worker.js')
+      .then(() => console.log('Service Worker Registered'))
+      .catch(err => console.log('Service Worker Registration Failed: ', err));
+  }
+}
+
+function checkInstallPromotion() {
+  window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault();
+    deferredPrompt = e;
+    document.getElementById('install-container').classList.remove('hidden');
+  });
+
+  document.getElementById('install-btn').addEventListener('click', async () => {
+    playClickSound();
+    if (deferredPrompt) {
+      deferredPrompt.prompt();
+      const { outcome } = await deferredPrompt.userChoice;
+      console.log(`User response to the install prompt: ${outcome}`);
+      deferredPrompt = null;
+      document.getElementById('install-container').classList.add('hidden');
+    }
+  });
+}
+
+function loadRememberMe() {
+  const rememberMe = localStorage.getItem('rememberMe') === 'true';
+  if (rememberMe) {
+    const savedUsername = localStorage.getItem('username');
+    const savedPassword = localStorage.getItem('password');
+    if (savedUsername && savedPassword) {
+      document.getElementById('username').value = savedUsername;
+      document.getElementById('password').value = savedPassword;
+      document.getElementById('remember-me').checked = true;
+    }
+  }
+}
+
+function saveRememberMe(username, password, remember) {
+  if (remember) {
+    localStorage.setItem('username', username);
+    localStorage.setItem('password', password);
+    localStorage.setItem('rememberMe', 'true');
+  } else {
+    localStorage.removeItem('username');
+    localStorage.removeItem('password');
+    localStorage.setItem('rememberMe', 'false');
+  }
+}
+
+async function login() {
+  playClickSound();
+  const username = document.getElementById("username").value.trim();
+  const password = document.getElementById("password").value.trim();
+  const rememberMe = document.getElementById("remember-me").checked;
+  const loginError = document.getElementById("login-error");
+
+  loginError.innerText = "";
+
+  // تسجيل دخول الأدمن
+  if (username === "admin" && password === "admin") {
+    isAdmin = true;
+    saveRememberMe(username, password, rememberMe);
+    showAdminPanel();
+    showNotification('Admin login successful', 'success');
+    return;
+  }
+
+  // تسجيل دخول الفنيين
+  const ref = database.ref(`technicians/${username}`);
+  
+  ref.once("value", snapshot => {
+    if (snapshot.exists() && snapshot.val().password === password) {
+      // التحقق من بصمة الجهاز
+      checkDeviceFingerprint(username)
+        .then(() => {
+          saveRememberMe(username, password, rememberMe);
+          showUserScreen(username, snapshot.val());
+          showNotification(`Welcome back, ${username}!`, 'success');
+        })
+        .catch(error => {
+          loginError.innerText = error;
+          showNotification('Login failed: ' + error, 'error');
+        });
+    } else {
+      loginError.innerText = "Invalid username or password. Please try again.";
+      showNotification('Login failed. Invalid credentials', 'error');
+    }
+  });
+}
+
+// تعديل دالة showUserScreen لضمان تحميل الصورة والاسم بشكل صحيح
+function showUserScreen(username, userData) {
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("user-screen").classList.remove("hidden");
+  document.getElementById("user-name").innerText = username;
+  document.getElementById("displayed-user-name").innerText = username;
+  
+  // تحميل صورة الفني
+  const userImage = document.getElementById('user-image');
+  const defaultIcon = document.getElementById('default-user-icon');
+  
+  if (userData && userData.image) {
+    userImage.src = userData.image;
+    userImage.onload = function() {
+      userImage.classList.remove('hidden');
+      defaultIcon.classList.add('hidden');
+    };
+    userImage.onerror = function() {
+      userImage.classList.add('hidden');
+      defaultIcon.classList.remove('hidden');
+    };
+  } else {
+    userImage.classList.add('hidden');
+    defaultIcon.classList.remove('hidden');
+  }
+  
+  setTimeout(() => {
+    document.getElementById("welcome-message").classList.add("hidden");
+  }, 5000);
+
+  checkTodayStatus(username);
+}
+
+function showAdminPanel() {
+  document.getElementById("login-screen").classList.add("hidden");
+  document.getElementById("admin-screen").classList.remove("hidden");
+  
+  // تحميل إعدادات النسخ الاحتياطي التلقائي
+  loadBackupSettings();
+  
+  // تحميل قائمة الفنيين في القائمة المنسدلة
+  populateTechniciansDropdown();
+}
+
+function loadBackupSettings() {
+  const ref = database.ref('backupSettings');
+  ref.once("value", snapshot => {
+    if (snapshot.exists()) {
+      const settings = snapshot.val();
+      autoBackupEnabled = settings.enabled !== false; // Default to true if not set
+      backupTime = settings.time || "00:00";
+      
+      document.getElementById('auto-backup-toggle').checked = autoBackupEnabled;
+      document.getElementById('backup-time').value = backupTime;
+    }
+    
+    // جدولة النسخ التلقائية بناءً على الإعدادات
+    scheduleDailyBackups();
+  });
+}
+
+function saveBackupSettings() {
+  playClickSound();
+  const enabled = document.getElementById('auto-backup-toggle').checked;
+  const time = document.getElementById('backup-time').value;
+  
+  const ref = database.ref('backupSettings');
+  ref.set({
+    enabled,
+    time
+  }).then(() => {
+    autoBackupEnabled = enabled;
+    backupTime = time;
+    scheduleDailyBackups();
+    showNotification("Backup settings saved", "success");
+  }).catch(error => {
+    showNotification("Failed to save backup settings: " + error.message, "error");
+  });
+}
+
+function logout() {
+  playClickSound();
+  document.getElementById("login-screen").classList.remove("hidden");
+  document.getElementById("user-screen").classList.add("hidden");
+  document.getElementById("admin-screen").classList.add("hidden");
+  document.getElementById("password").value = "";
+  document.getElementById("login-error").innerText = "";
+  isAdmin = false;
+  showNotification('Logged out successfully', 'info');
+}
+
+// دالة لطلب إذن الإشعارات
+function requestNotificationPermission() {
+  if (!("Notification" in window)) {
+    console.log("This browser does not support notifications.");
+    return;
+  }
+  
+  Notification.requestPermission().then(permission => {
+    if (permission === "granted") {
+      console.log("Notification permission granted");
+      // Register service worker for push notifications
+      if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+          registration.showNotification('Notifications Enabled', {
+            body: 'You will now receive shift notifications',
+            icon: 'https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png'
+          });
+        });
+      }
+    }
+  });
+}
+
+// إنشاء ملف Manifest لتثبيت التطبيق
+function createManifest() {
+  const manifest = {
+    "name": "Food Trip",
+    "short_name": "Food Trip",
+    "description": "Employee Attendance Management System",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#234f1e",
+    "theme_color": "#234f1e",
+    "icons": [
+      {
+        "src": "https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png",
+        "sizes": "192x192",
+        "type": "image/png"
+      },
+      {
+        "src": "https://i.postimg.cc/8P8NDNsr/Screenshot-2025-07-09-185002.png",
+        "sizes": "512x512",
+        "type": "image/png"
+      }
+    ]
+  };
+  
+  const blob = new Blob([JSON.stringify(manifest)], { type: 'application/json' });
+  const manifestURL = URL.createObjectURL(blob);
+  document.querySelector('link[rel="manifest"]').href = manifestURL;
+}
+
+// دالة للتبديل بين محتوى الأزرار الموحدة
+function toggleContent(contentId) {
+  playClickSound();
+  const content = document.getElementById(contentId);
+  content.classList.toggle('active');
+  
+  // إذا كان نوع الجهاز، قم بتحميل قائمة الأجهزة
+  if (contentId === 'device-content' && content.classList.contains('active')) {
+    viewDeviceManagement();
+  }
+  
+  // إذا كان نوع النسخ الاحتياطي، قم بتحميل إعدادات النسخ الاحتياطي
+  if (contentId === 'backup-content' && content.classList.contains('active')) {
+    loadBackupSettings();
+  }
+  
+  // إذا كان نوع الإحصائيات، قم بتحميل الإحصائيات
+  if (contentId === 'stats-content' && content.classList.contains('active')) {
+    showDashboardStats();
+  }
+  
+  // إذا كان نوع الإدخال اليدوي، قم بتحميل القائمة المنسدلة للفنيين
+  if (contentId === 'manual-entry-section' && content.classList.contains('active')) {
+    populateTechniciansDropdown();
+  }
+}
+
+// دالة للحصول على الوقت والتاريخ المحلي
+async function getLocalTime() {
+  try {
+    // جلب الوقت من خدمة خارجية للتأكد من دقة الوقت
+    const response = await fetch('https://worldtimeapi.org/api/ip');
+    const data = await response.json();
+    
+    const serverTime = new Date(data.utc_datetime);
+    const localTime = new Date();
+    
+    // التحقق من أن وقت الجهاز لا يختلف كثيراً عن وقت الخادم
+    const timeDiff = Math.abs(localTime - serverTime);
+    const validTime = timeDiff < 5 * 60 * 1000; // 5 دقائق كحد أقصى للفرق
+    
+    // تحديد اليوم التشغيلي (إذا كان وقت الدخول قبل 8 صباحاً، فهو اليوم السابق)
+    let operationalDate = localTime.toISOString().split('T')[0];
+    if (localTime.getHours() < 8) {
+      const prevDay = new Date(localTime);
+      prevDay.setDate(prevDay.getDate() - 1);
+      operationalDate = prevDay.toISOString().split('T')[0];
+    }
+    
+    return {
+      date: operationalDate,
+      time: localTime.toTimeString().substring(0, 5),
+      valid: validTime
+    };
+  } catch (error) {
+    console.error("Error fetching server time, using local time:", error);
+    const localTime = new Date();
+    let operationalDate = localTime.toISOString().split('T')[0];
+    if (localTime.getHours() < 8) {
+      const prevDay = new Date(localTime);
+      prevDay.setDate(prevDay.getDate() - 1);
+      operationalDate = prevDay.toISOString().split('T')[0];
+    }
+    
+    return {
+      date: operationalDate,
+      time: localTime.toTimeString().substring(0, 5),
+      valid: true // نعتبره صحيحاً في حالة الخطأ
+    };
+  }
+}
+
+// دالة لعرض الإشعارات
+function showNotification(message, type = 'info') {
+  Toastify({
+    text: message,
+    duration: 3000,
+    close: true,
+    gravity: "top",
+    position: "center",
+    backgroundColor: 
+      type === 'error' ? "var(--danger-color)" :
+      type === 'success' ? "var(--success-color)" :
+      type === 'warning' ? "var(--warning-color)" :
+      "var(--info-color)",
+    stopOnFocus: true
+  }).showToast();
+}
+
+// دالة لفحص حالة الاتصال
+function checkConnectionStatus() {
+  const connectionStatus = document.getElementById('connection-status');
+  
+  function updateStatus() {
+    if (navigator.onLine) {
+      connectionStatus.className = 'connection-status connected';
+      connectionStatus.innerHTML = '<i class="fas fa-wifi"></i> <span>Connected</span>';
+    } else {
+      connectionStatus.className = 'connection-status disconnected';
+      connectionStatus.innerHTML = '<i class="fas fa-wifi-slash"></i> <span>No Internet</span>';
+    }
+  }
+  
+  // تحديث الحالة عند التحميل وعند تغير حالة الاتصال
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+  updateStatus();
+}
+
+// دالة لعرض لوحة الإحصائيات
+function showDashboardStats() {
+  const dashboardStats = document.getElementById('dashboard-stats');
+  dashboardStats.innerHTML = '<p>Loading statistics...</p>';
+  
+  const month = document.getElementById("month-select").value || (new Date().getMonth() + 1).toString().padStart(2, '0');
+  const year = new Date().getFullYear();
+  
+  // جلب بيانات جميع الفنيين
+  const techRef = database.ref('technicians');
+  techRef.once('value', techSnapshot => {
+    // جلب بيانات الحضور
+    const attendanceRef = database.ref('attendance');
+    attendanceRef.once('value', attendanceSnapshot => {
+      const stats = [];
+      
+      techSnapshot.forEach(tech => {
+        if (tech.key === 'test1') return; // تخطي المستخدم التجريبي
+        
+        let totalHours = 0;
+        let totalShifts = 0;
+        
+        attendanceSnapshot.child(tech.key).forEach(dateSnapshot => {
+          const dateParts = dateSnapshot.key.split('-');
+          if (dateParts[1] === month && dateParts[0] === year.toString()) {
+            const data = dateSnapshot.val();
+            if (data.workedHours) {
+              totalHours += parseFloat(data.workedHours);
+              if (data.shifts) {
+                if (data.shifts.includes('-')) {
+                  totalShifts += data.shifts.split('-').length;
+                } else if (data.shifts !== '0') {
+                  totalShifts += 1;
+                }
+              }
+            }
+          }
+        });
+        
+        stats.push({
+          name: tech.key,
+          hours: totalHours,
+          shifts: totalShifts
+        });
+      });
+      
+      // ترتيب الفنيين حسب ساعات العمل
+      const sortedByHours = [...stats].sort((a, b) => b.hours - a.hours);
+      const sortedByShifts = [...stats].sort((a, b) => b.shifts - a.shifts);
+      
+      // عرض الإحصائيات
+      let html = `
+        <div class="dashboard-stat-item">
+          <span class="dashboard-stat-label">Month:</span>
+          <span class="dashboard-stat-value">${new Date(year, parseInt(month)-1).toLocaleString('default', { month: 'long' })} ${year}</span>
+        </div>
+        
+        <h4>Top Performers</h4>
+      `;
+      
+      if (sortedByHours.length > 0) {
+        html += `
+          <div class="dashboard-stat-item">
+            <span class="dashboard-stat-label">Most Hours:</span>
+            <span class="dashboard-stat-value">${sortedByHours[0].name} (${sortedByHours[0].hours.toFixed(2)} hours)</span>
+          </div>
+          <div class="dashboard-stat-item">
+            <span class="dashboard-stat-label">Most Shifts:</span>
+            <span class="dashboard-stat-value">${sortedByShifts[0].name} (${sortedByShifts[0].shifts} shifts)</span>
+          </div>
+          
+          <h4>Low Performers</h4>
+          <div class="dashboard-stat-item">
+            <span class="dashboard-stat-label">Least Hours:</span>
+            <span class="dashboard-stat-value">${sortedByHours[sortedByHours.length-1].name} (${sortedByHours[sortedByHours.length-1].hours.toFixed(2)} hours)</span>
+          </div>
+          <div class="dashboard-stat-item">
+            <span class="dashboard-stat-label">Least Shifts:</span>
+            <span class="dashboard-stat-value">${sortedByShifts[sortedByShifts.length-1].name} (${sortedByShifts[sortedByShifts.length-1].shifts} shifts)</span>
+          </div>
+        `;
+      } else {
+        html += '<p>No attendance data available for this month</p>';
+      }
+      
+      dashboardStats.innerHTML = html;
+    });
+  });
+}
+
+window.onload = () => {
+  document.documentElement.setAttribute('data-theme', currentTheme);
+  const themeIcon = document.getElementById('theme-icon');
+  themeIcon.className = currentTheme === 'dark' ? 'fas fa-sun' : 'fas fa-moon';
+  
+  document.getElementById('theme-toggle').addEventListener('click', toggleTheme);
+  
+  // إخفاء شاشة البداية بعد 5 ثواني
+  setTimeout(() => {
+    document.getElementById("main-app").classList.remove("hidden");
+  }, 5000);
+  
+  checkInstallPromotion();
+  
+  // إنشاء بصمة الجهاز
+  deviceFingerprint = generateDeviceFingerprint();
+  document.getElementById('device-info').textContent = `Device ID: ${deviceFingerprint.substring(0, 8)}...`;
+  
+  addTestTechnician();
+
+  const now = new Date();
+  const currentMonth = (now.getMonth() + 1).toString().padStart(2, '0');
+  document.getElementById("month-select").value = currentMonth;
+
+  setupServiceWorker();
+  loadRememberMe();
+  getLocalTime();
+  
+  // إنشاء ملف Manifest لتثبيت التطبيق
+  createManifest();
+  
+  // طلب إذن الإشعارات
+  requestNotificationPermission();
+  
+  // إعداد معالجات أحداث النسخ الاحتياطي التلقائي
+  document.getElementById('auto-backup-toggle').addEventListener('change', function() {
+    saveBackupSettings();
+  });
+  
+  document.getElementById('backup-time').addEventListener('change', function() {
+    saveBackupSettings();
+  });
+  
+  // جدولة النسخ اليومية التلقائية
+  scheduleDailyBackups();
+  
+  // التحقق من حالة الاتصال
+  checkConnectionStatus();
+  
+  // تعيين تاريخ الخروج الافتراضي لتاريخ الدخول في التسجيل اليدوي
+  document.getElementById('manual-date').addEventListener('change', function() {
+    document.getElementById('manual-date-out').value = this.value;
+  });
+  
+  // إضافة مستمع لأزرار الفأرة لتشغيل صوت النقر
+  document.querySelectorAll('button').forEach(button => {
+    button.addEventListener('click', playClickSound);
+  });
+};
+</script>
+</body>
+</html>
